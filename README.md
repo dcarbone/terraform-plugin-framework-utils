@@ -1,4 +1,4 @@
-# terraform-plugin-framework-utils
+# Terraform Plugin Framework Utilities
 Utilities for use with the
 [HashiCorp Terraform Plugin Framework](https://github.com/hashicorp/terraform-plugin-framework)
 
