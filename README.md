@@ -38,7 +38,7 @@ Fails validation if the attribute is null or unknown
 
 ```go
 {
-	Validators: []tfsdk.AttributeValidator{
+    Validators: []tfsdk.AttributeValidator{
         validation.Required()
     },
 }
@@ -74,13 +74,13 @@ Fails validation if the attribute's value's length is not within the specified b
 {
     Validators: []tfsdk.AttributeValidator{
         // lower limit
-        validation.Lenght(5, -1),
+        validation.Length(5, -1),
 
         // upper limit
         validation.Length(-1, 10),
 
         // lower and upper limit
-        validation.length(5, 10),
+        validation.Length(5, 10),
     },
 }
 ```
