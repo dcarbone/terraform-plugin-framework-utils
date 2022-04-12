@@ -63,7 +63,11 @@ Fails validation if the attribute's value matches the user-defined regular expre
 will attempt to convert the attribute to a string first.
 
 ```go
-v := validation.RegexpNotMatch("{{ your regex here }}")
+{
+    Validators: []tfsdk.AttributeValidator{
+    	validation.RegexpNotMatch("{{ your regex here }}")
+    },
+}
 ```
 
 ### Length
