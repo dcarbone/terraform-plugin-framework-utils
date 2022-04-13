@@ -2,14 +2,22 @@
 Utilities for use with the
 [HashiCorp Terraform Plugin Framework](https://github.com/hashicorp/terraform-plugin-framework)
 
+[![Documentation](https://img.shields.io/badge/pkg.go.dev-docs-informational)](https://pkg.go.dev/github.com/dcarbone/terraform-plugin-framework-utils)
+
 This project, much like the framework itself, is a work in progress.  I will try to keep it as up to date with upstream
 changes as possible but, as always, community help is appreciated!
 
 # Index
 
+* [Installation](#installation)
 * [Type Conversion](#type-conversion)
 * [Attribute Validation](#attribute-validation)
 * [Test Utilities](#test-utilities)
+
+# Installation
+```shell
+go get -u github.com/dcarbone/terraform-plugin-framework-utils@latest
+```
 
 # Type Conversion
 
