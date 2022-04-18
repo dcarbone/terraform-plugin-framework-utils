@@ -260,10 +260,10 @@ So I created a few [config utilities](acctest/config.go) to assist with this.
 ```go
 fieldMap := map[string]interface{}{
 	"address": "http://example.com",
-	"token": acctest.Literal("file(\"/location/on/disk/token\")"),
+	"token": acctest.Literal(`file("/location/on/disk/token")`),
 	"number_of_fish_in_the_sea": 3500000000000,
 }
-confHCL := acctest.CompileProviderConfig("my_provider", map[string]interface{}{})
+confHCL := acctest.CompileProviderConfig("my_provider", fieldMap)
 ```
 
 ```hcl
