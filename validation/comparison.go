@@ -3,10 +3,10 @@ package validation
 import (
 	"fmt"
 	"math/big"
-	"reflect"
 	"sync"
 
 	"github.com/dcarbone/terraform-plugin-framework-utils/conv"
+	"github.com/dcarbone/terraform-plugin-framework-utils/internal/util"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -47,15 +47,6 @@ var (
 	comparisonFuncsMu sync.Mutex
 	comparisonFuncs   map[string]ComparisonFunc
 )
-
-func buildReflectTypeKey(varType reflect.Type) string {
-	const kfmt = "%s.%s.%s"
-	return fmt.Sprintf(kfmt, varType.PkgPath(), varType.Name(), varType.String())
-}
-
-func kfn(t interface{}) string {
-	return buildReflectTypeKey(reflect.TypeOf(t))
-}
 
 func compareBool(av attr.Value, op CompareOp, target interface{}) error {
 	switch op {
@@ -216,12 +207,12 @@ func compareString(av attr.Value, op CompareOp, target interface{}) error {
 // DefaultComparisonFuncs returns the complete list of default comparison functions
 func DefaultComparisonFuncs() map[string]ComparisonFunc {
 	return map[string]ComparisonFunc{
-		kfn(false):          compareBool,
-		kfn(0.0):            compareFloat64,
-		kfn(int64(0)):       compareInt64,
-		kfn(0):              compareInt,
-		kfn(new(big.Float)): compareBigFloat,
-		kfn(""):             compareString,
+		util.KeyFN(false):          compareBool,
+		util.KeyFN(0.0):            compareFloat64,
+		util.KeyFN(int64(0)):       compareInt64,
+		util.KeyFN(0):              compareInt,
+		util.KeyFN(new(big.Float)): compareBigFloat,
+		util.KeyFN(""):             compareString,
 	}
 }
 
@@ -229,7 +220,7 @@ func DefaultComparisonFuncs() map[string]ComparisonFunc {
 func SetComparisonFunc(targetType interface{}, fn ComparisonFunc) {
 	comparisonFuncsMu.Lock()
 	defer comparisonFuncsMu.Unlock()
-	comparisonFuncs[kfn(targetType)] = fn
+	comparisonFuncs[util.KeyFN(targetType)] = fn
 }
 
 // GetComparisonFunc attempts to return a previously registered comparison function for a specified op : type
@@ -237,7 +228,7 @@ func SetComparisonFunc(targetType interface{}, fn ComparisonFunc) {
 func GetComparisonFunc(targetType interface{}) (ComparisonFunc, bool) {
 	comparisonFuncsMu.Lock()
 	defer comparisonFuncsMu.Unlock()
-	if fn, ok := comparisonFuncs[kfn(targetType)]; ok {
+	if fn, ok := comparisonFuncs[util.KeyFN(targetType)]; ok {
 		return fn, true
 	}
 	return nil, false

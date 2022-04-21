@@ -3,74 +3,114 @@ package acctest
 import (
 	"fmt"
 	"strings"
+	"sync"
+
+	"github.com/dcarbone/terraform-plugin-framework-utils/internal/util"
 )
 
 type ConfigLiteral string
 
+type ConfigValueFunc func(interface{}) string
+
+var (
+	configValueFuncsMu sync.RWMutex
+	configValueFuncs   map[string]ConfigValueFunc
+)
+
+func SetConfigValueFunc(t interface{}, fn ConfigValueFunc) {
+	configValueFuncsMu.Lock()
+	defer configValueFuncsMu.Unlock()
+	configValueFuncs[util.KeyFN(t)] = fn
+}
+
+func GetConfigValueFunc(t interface{}) (ConfigValueFunc, bool) {
+	configValueFuncsMu.RLock()
+	defer configValueFuncsMu.RUnlock()
+	fn, ok := configValueFuncs[util.KeyFN(t)]
+	return fn, ok
+}
+
+func DefaultConfigValueFuncs() map[string]ConfigValueFunc {
+	return map[string]ConfigValueFunc{
+		// nil
+		util.KeyFN(nil): func(_ interface{}) string { return "null" },
+
+		// values to print literally
+		util.KeyFN(ConfigLiteral("")): func(v interface{}) string { return string(v.(ConfigLiteral)) },
+
+		// simple conversions
+		util.KeyFN(false):      func(v interface{}) string { return fmt.Sprintf("%t", v.(bool)) },
+		util.KeyFN(0):          func(v interface{}) string { return fmt.Sprintf("%d", v.(int)) },
+		util.KeyFN(float64(0)): func(v interface{}) string { return fmt.Sprintf("%f", v.(float64)) },
+
+		// handle single and multi-line strings
+		util.KeyFN(""): func(v interface{}) string {
+			if strings.Contains(v.(string), "\n") {
+				return fmt.Sprintf("<<EOD\n%s\nEOD", v.(string))
+			} else {
+				return fmt.Sprintf("%q", v.(string))
+			}
+		},
+
+		// slices
+
+		util.KeyFN(make([]interface{}, 0)): func(v interface{}) string {
+			formatted := make([]string, 0)
+			for _, v := range v.([]interface{}) {
+				formatted = append(formatted, ConfigValue(v))
+			}
+			return fmt.Sprintf("[\n%s\n]", strings.Join(formatted, ",\n"))
+		},
+		util.KeyFN(make([]string, 0)): func(v interface{}) string {
+			formatted := make([]string, 0)
+			for _, v := range v.([]string) {
+				formatted = append(formatted, ConfigValue(v))
+			}
+			return fmt.Sprintf("[\n%s\n]", strings.Join(formatted, ",\n"))
+		},
+		util.KeyFN(make([]int, 0)): func(v interface{}) string {
+			formatted := make([]string, 0)
+			for _, v := range v.([]int) {
+				formatted = append(formatted, ConfigValue(v))
+			}
+			return fmt.Sprintf("[\n%s\n]", strings.Join(formatted, ",\n"))
+		},
+		util.KeyFN(make([]float64, 0)): func(v interface{}) string {
+			formatted := make([]string, 0)
+			for _, v := range v.([]float64) {
+				formatted = append(formatted, ConfigValue(v))
+			}
+			return fmt.Sprintf("[\n%s\n]", strings.Join(formatted, ",\n"))
+		},
+
+		// maps
+
+		util.KeyFN(make(map[string]interface{})): func(v interface{}) string {
+			inner := "{"
+			for k, v := range v.(map[string]interface{}) {
+				inner = fmt.Sprintf("%s\n%s = %s", inner, k, ConfigValue(v))
+			}
+			return fmt.Sprintf("%s\n}", inner)
+		},
+		util.KeyFN(make(map[string]string)): func(v interface{}) string {
+			inner := "{"
+			for k, v := range v.(map[string]string) {
+				inner = fmt.Sprintf("%s\n%s = %s", inner, k, ConfigValue(v))
+			}
+			return fmt.Sprintf("%s\n}", inner)
+		},
+	}
+}
+
+func init() {
+	configValueFuncs = DefaultConfigValueFuncs()
+}
+
 // ConfigValue attempts to convert the provided input to a Terraform config safe representation of its value
 func ConfigValue(in interface{}) string {
-	switch in.(type) {
-	case nil:
-		return "null"
-
-	case ConfigLiteral:
-		return string(in.(ConfigLiteral))
-
-	case string:
-		if strings.Contains(in.(string), "\n") {
-			return fmt.Sprintf("<<EOD\n%s\nEOD", in.(string))
-		} else {
-			return fmt.Sprintf("%q", in.(string))
-		}
-
-	case bool:
-		return fmt.Sprintf("%t", in.(bool))
-
-	case int:
-		return fmt.Sprintf("%d", in.(int))
-
-	case float64:
-		return fmt.Sprintf("%f", in.(float64))
-
-	case []interface{}:
-		formatted := make([]string, 0)
-		for _, v := range in.([]interface{}) {
-			formatted = append(formatted, ConfigValue(v))
-		}
-		return fmt.Sprintf("[\n%s]", strings.Join(formatted, ",\n"))
-	case []string:
-		formatted := make([]string, 0)
-		for _, v := range in.([]string) {
-			formatted = append(formatted, ConfigValue(v))
-		}
-		return fmt.Sprintf("[\n%s]", strings.Join(formatted, ",\n"))
-	case []int:
-		formatted := make([]string, 0)
-		for _, v := range in.([]int) {
-			formatted = append(formatted, ConfigValue(v))
-		}
-		return fmt.Sprintf("[\n%s]", strings.Join(formatted, ",\n"))
-	case []float64:
-		formatted := make([]string, 0)
-		for _, v := range in.([]float64) {
-			formatted = append(formatted, ConfigValue(v))
-		}
-		return fmt.Sprintf("[\n%s]", strings.Join(formatted, ",\n"))
-
-	case map[string]interface{}:
-		inner := "{"
-		for k, v := range in.(map[string]interface{}) {
-			inner = fmt.Sprintf("%s\n%s = %s", inner, k, ConfigValue(v))
-		}
-		return fmt.Sprintf("%s\n}", inner)
-	case map[string]string:
-		inner := "{"
-		for k, v := range in.(map[string]string) {
-			inner = fmt.Sprintf("%s\n%s = %s", inner, k, ConfigValue(v))
-		}
-		return fmt.Sprintf("%s\n}", inner)
-
-	default:
+	if fn, ok := GetConfigValueFunc(in); ok {
+		return fn(in)
+	} else {
 		panic(fmt.Sprintf("Unable to handle config values of type %T", in))
 	}
 }
