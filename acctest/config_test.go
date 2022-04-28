@@ -5,50 +5,66 @@ import (
 	"math"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/dcarbone/terraform-plugin-framework-utils/acctest"
 )
 
 func TestConfigValue_Defaults(t *testing.T) {
 	type convTest struct {
-		in  interface{}
-		out interface{}
+		name string
+		in   interface{}
+		out  interface{}
 	}
 
 	theTests := []convTest{
 		{
-			in:  nil,
-			out: "null",
+			name: "nil",
+			in:   nil,
+			out:  "null",
 		},
 		{
-			in:  acctest.ConfigLiteral("local.whateverthing"),
-			out: "local.whateverthing",
+			name: "config-literal",
+			in:   acctest.ConfigLiteral("local.whateverthing"),
+			out:  "local.whateverthing",
 		},
 		{
-			in:  true,
-			out: "true",
+			name: "bool-true",
+			in:   true,
+			out:  "true",
 		},
 		{
-			in:  false,
-			out: "false",
+			name: "bool-false",
+			in:   false,
+			out:  "false",
 		},
 		{
-			in:  math.MaxInt16,
-			out: fmt.Sprintf("%d", math.MaxInt16),
+			name: "int-positive",
+			in:   math.MaxInt16,
+			out:  fmt.Sprintf("%d", math.MaxInt16),
 		},
 		{
-			in:  -5,
-			out: "-5",
+			name: "int-negative",
+			in:   -5,
+			out:  "-5",
 		},
 		{
-			in:  0.5,
-			out: fmt.Sprintf("%f", 0.5),
+			name: "float-positive",
+			in:   0.5,
+			out:  fmt.Sprintf("%f", 0.5),
 		},
 		{
-			in:  "single-line",
-			out: `"single-line"`,
+			name: "float-negative",
+			in:   -0.5,
+			out:  fmt.Sprintf("%f", -0.5),
 		},
 		{
+			name: "string-literal",
+			in:   "single-line",
+			out:  `"single-line"`,
+		},
+		{
+			name: "string-heredoc",
 			in: `multi
 line`,
 			out: `<<EOD
@@ -57,28 +73,37 @@ line
 EOD`,
 		},
 		{
-			in: []interface{}{"hello", 5},
+			name: "duration-to-string",
+			in:   time.Nanosecond,
+			out:  `"1ns"`,
+		},
+		{
+			name: "slice-interface",
+			in:   []interface{}{"hello", 5},
 			out: `[
 "hello",
 5
 ]`,
 		},
 		{
-			in: []string{"hello", "there"},
+			name: "slice-string",
+			in:   []string{"hello", "there"},
 			out: `[
 "hello",
 "there"
 ]`,
 		},
 		{
-			in: []int{1, 5},
+			name: "slice-int",
+			in:   []int{1, 5},
 			out: `[
 1,
 5
 ]`,
 		},
 		{
-			in: []float64{1, 5},
+			name: "slice-float64",
+			in:   []float64{1, 5},
 			out: `[
 ` + fmt.Sprintf("%f", float64(1)) + `,
 ` + fmt.Sprintf("%f", float64(5)) + `
@@ -89,14 +114,16 @@ EOD`,
 	// todo: use biggerer brain to figure out how to test map -> string verification
 
 	for _, theT := range theTests {
-		out := acctest.ConfigValue(theT.in)
-		if !reflect.DeepEqual(out, theT.out) {
-			t.Log("Output does not match expected")
-			t.Logf("Input: %v", theT.in)
-			t.Logf("Expected: %v", theT.out)
-			t.Logf("Actual: %v", out)
-			t.Fail()
-		}
+		t.Run(theT.name, func(t *testing.T) {
+			out := acctest.ConfigValue(theT.in)
+			if !reflect.DeepEqual(out, theT.out) {
+				t.Log("Output does not match expected")
+				t.Logf("Input: %v", theT.in)
+				t.Logf("Expected: %v", theT.out)
+				t.Logf("Actual: %v", out)
+				t.Fail()
+			}
+		})
 	}
 }
 

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/dcarbone/terraform-plugin-framework-utils/internal/util"
 )
@@ -50,6 +51,12 @@ func DefaultConfigValueFuncs() map[string]ConfigValueFunc {
 			} else {
 				return fmt.Sprintf("%q", v.(string))
 			}
+		},
+
+		// time values
+
+		util.KeyFN(time.Nanosecond): func(v interface{}) string {
+			return ConfigValue(v.(time.Duration).String())
 		},
 
 		// slices
