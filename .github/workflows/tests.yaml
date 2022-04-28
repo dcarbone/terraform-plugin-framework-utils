@@ -2,6 +2,8 @@ on:
   pull_request:
     paths:
       - "**.go"
+      - "go.mod"
+      - "go.sum"
 
   push:
     branches:
@@ -9,6 +11,8 @@ on:
     paths:
       - ".github/workflows/tests.yaml"
       - "**.go"
+      - "go.mod"
+      - "go.sum"
 
 jobs:
   tests:
