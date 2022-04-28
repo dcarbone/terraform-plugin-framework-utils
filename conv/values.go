@@ -566,6 +566,15 @@ func StringToStringValue(s string) types.String {
 	return types.String{Value: s}
 }
 
+// BytesToStringValue takes a byte slice and wraps it as a types.String.  If the provided slice is `nil`, then the
+// resulting String type will be marked as "null".
+func BytesToStringValue(b []byte) types.String {
+	if b == nil {
+		return types.String{Null: true}
+	}
+	return StringToStringValue(string(b))
+}
+
 // StringPtrToStringValue takes a *string and wraps it up as a types.String
 // If the go value is nil, Null will be true on the outgoing attr.Value type
 func StringPtrToStringValue(s *string) types.String {
