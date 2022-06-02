@@ -239,7 +239,7 @@ func CompareTest(op CompareOp, target interface{}) TestFunc {
 		if err != nil {
 			switch true {
 			case errors.Is(err, ErrComparisonFailed):
-				addComparisonFailedDiagnostic(op, target, req, resp)
+				addComparisonFailedDiagnostic(op, target, req, resp, err)
 
 			case errors.Is(err, ErrTypeConversionFailed):
 				resp.Diagnostics.AddAttributeError(
@@ -493,6 +493,24 @@ func MutuallyInclusiveSibling(siblingAttr string) AttributeValidator {
 		MutuallyInclusiveSiblingTest(siblingAttr),
 		false,
 		false,
+	)
+
+	return v
+}
+
+func OneOfStringTest(values []string, caseSensitive bool) TestFunc {
+	return func(ctx context.Context, req tfsdk.ValidateAttributeRequest, resp *tfsdk.ValidateAttributeResponse) {
+
+	}
+}
+
+func OneOfString(values []string, caseSensitive bool) AttributeValidator {
+	v := NewValidator(
+		fmt.Sprintf(`Ensure attribute has a value from set ["%s"]`, strings.Join(values, `", "`)),
+		fmt.Sprintf(`Ensure attribute has a value from set ["%s"]`, strings.Join(values, `", "`)),
+		OneOfStringTest(values, caseSensitive),
+		true,
+		true,
 	)
 
 	return v

@@ -21,6 +21,6 @@ func GoNumberToString(num interface{}) string {
 		return num.(*big.Float).String()
 
 	default:
-		panic(fmt.Sprintf("no case for type %T", num))
+		return fmt.Sprintf("%T", num)
 	}
 }

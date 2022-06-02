@@ -3,13 +3,13 @@ package validation
 import (
 	"fmt"
 	"math/big"
+	"strings"
 	"sync"
 
 	"github.com/dcarbone/terraform-plugin-framework-utils/conv"
 	"github.com/dcarbone/terraform-plugin-framework-utils/internal/util"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 type CompareOp string
@@ -20,11 +20,37 @@ const (
 	LessThanOrEqualTo    CompareOp = "<="
 	GreaterThan          CompareOp = ">"
 	GreaterThanOrEqualTo CompareOp = ">="
-	NotEqual             CompareOp = "!="
+	NotEqual             CompareOp = "<>"
+	OneOf                CompareOp = "|"
+	NotOneOf             CompareOp = "^|"
 )
 
 func (op CompareOp) String() string {
 	return string(op)
+}
+
+func (op CompareOp) Name() string {
+	switch op {
+	case Equal:
+		return "equal"
+	case LessThan:
+		return "less_than"
+	case LessThanOrEqualTo:
+		return "less_than_or_equal_to"
+	case GreaterThan:
+		return "greater_than"
+	case GreaterThanOrEqualTo:
+		return "greater_than_or_equal_to"
+	case NotEqual:
+		return "not_equal"
+	case OneOf:
+		return "one_of"
+	case NotOneOf:
+		return "not_one_of"
+
+	default:
+		return "UNKNOWN"
+	}
 }
 
 // ComparisonFunc executes a specific comparison of an attribute value to the targeted value.  You are guaranteed that
@@ -41,178 +67,262 @@ func (op CompareOp) String() string {
 // To see the default list of functions, see DefaultComparisonFuncs.
 //
 // To register a new function or overwrite an existing function, see SetComparisonFunc
-type ComparisonFunc func(av attr.Value, op CompareOp, target interface{}) error
+type ComparisonFunc func(av attr.Value, op CompareOp, target interface{}, meta ...interface{}) error
 
 var (
 	comparisonFuncsMu sync.Mutex
 	comparisonFuncs   map[string]ComparisonFunc
 )
 
-func compareBool(av attr.Value, op CompareOp, target interface{}) error {
+func compareBool(av attr.Value, op CompareOp, target interface{}, _ ...interface{}) error {
+	actBool := conv.BoolValueToBool(av)
+	expBool, err := util.TryCoerceToBool(target)
+	if err != nil {
+		return UnexpectedComparisonTargetTypeError("compare_bool", true, target, err)
+	}
 	switch op {
 	case Equal:
-		if !av.Equal(types.Bool{Value: target.(bool)}) {
-			return ErrComparisonFailed
+		if actBool == expBool {
+			return nil
 		}
 	case NotEqual:
-		if av.Equal(types.Bool{Value: target.(bool)}) {
-			return ErrComparisonFailed
+		if actBool != expBool {
+			return nil
 		}
 
 	default:
-		return ErrNoComparisonFuncRegistered
+		return NoComparisonFuncRegisteredError(av, op)
 	}
-	return nil
+
+	return ComparisonFailedError(op, expBool, actBool)
 }
 
-func compareFloat64(av attr.Value, op CompareOp, target interface{}) error {
-	asF64, _, err := conv.AttributeValueToFloat64(av)
+func compareFloat64(av attr.Value, op CompareOp, target interface{}, _ ...interface{}) error {
+	actF64, _, err := conv.AttributeValueToFloat64(av)
 	if err != nil {
-		return fmt.Errorf("%w: %v", ErrTypeConversionFailed, err)
+		return TypeConversionFailedError(err)
 	}
+	expF64, err := util.TryCoerceToFloat64(target)
+	if err != nil {
+		return UnexpectedComparisonTargetTypeError("compare_float64", float64(0), target, err)
+	}
+
 	switch op {
 	case Equal:
-		if asF64 != target.(float64) {
-			return ErrComparisonFailed
+		if actF64 == expF64 {
+			return nil
 		}
 	case NotEqual:
-		if asF64 == target.(float64) {
-			return ErrComparisonFailed
+		if actF64 != expF64 {
+			return nil
 		}
 	case GreaterThan:
-		if asF64 <= target.(float64) {
-			return ErrComparisonFailed
+		if actF64 > expF64 {
+			return nil
 		}
 	case GreaterThanOrEqualTo:
-		if asF64 < target.(float64) {
-			return ErrComparisonFailed
+		if actF64 >= expF64 {
+			return nil
 		}
 	case LessThan:
-		if asF64 >= target.(float64) {
-			return ErrComparisonFailed
+		if actF64 < expF64 {
+			return nil
 		}
 	case LessThanOrEqualTo:
-		if asF64 > target.(float64) {
-			return ErrComparisonFailed
+		if actF64 <= expF64 {
+			return nil
 		}
 
 	default:
-		panic(fmt.Sprintf("unknown comparison operator: %q", op))
+		return NoComparisonFuncRegisteredError(av, op)
 	}
 
-	return nil
+	return ComparisonFailedError(op, expF64, actF64)
 }
 
-func compareInt64(av attr.Value, op CompareOp, target interface{}) error {
-	asI64, _, err := conv.AttributeValueToInt64(av)
+func compareInt64(av attr.Value, op CompareOp, target interface{}, _ ...interface{}) error {
+	actI64, _, err := conv.AttributeValueToInt64(av)
 	if err != nil {
-		return fmt.Errorf("%w: %v", ErrTypeConversionFailed, err)
+		return TypeConversionFailedError(err)
 	}
+	tgtI64, err := util.TryCoerceToInt64(target)
+	if err != nil {
+		return UnexpectedComparisonTargetTypeError("compare_int64", int64(0), target, err)
+	}
+
 	switch op {
 	case Equal:
-		if asI64 != target.(int64) {
-			return ErrComparisonFailed
+		if actI64 == tgtI64 {
+			return nil
 		}
 	case NotEqual:
-		if asI64 == target.(int64) {
-			return ErrComparisonFailed
+		if actI64 != tgtI64 {
+			return nil
 		}
 	case GreaterThan:
-		if asI64 <= target.(int64) {
-			return ErrComparisonFailed
+		if actI64 > tgtI64 {
+			return nil
 		}
 	case GreaterThanOrEqualTo:
-		if asI64 < target.(int64) {
-			return ErrComparisonFailed
+		if actI64 >= tgtI64 {
+			return nil
 		}
 	case LessThan:
-		if asI64 >= target.(int64) {
-			return ErrComparisonFailed
+		if actI64 < tgtI64 {
+			return nil
 		}
 	case LessThanOrEqualTo:
-		if asI64 > target.(int64) {
-			return ErrComparisonFailed
+		if actI64 <= tgtI64 {
+			return nil
 		}
 
 	default:
-		panic(fmt.Sprintf("unknown comparison operator: %q", op))
+		return NoComparisonFuncRegisteredError(av, op)
 	}
 
-	return nil
+	return ComparisonFailedError(op, tgtI64, actI64)
 }
 
-func compareInt(av attr.Value, op CompareOp, target interface{}) error {
+func compareInt(av attr.Value, op CompareOp, target interface{}, _ ...interface{}) error {
 	return compareInt64(av, op, int64(target.(int)))
 }
 
-func compareBigFloat(av attr.Value, op CompareOp, target interface{}) error {
-	asBF, err := conv.AttributeValueToBigFloat(av)
+func compareBigFloat(av attr.Value, op CompareOp, target interface{}, _ ...interface{}) error {
+	actualBF := conv.NumberValueToBigFloat(av)
+	expectedBF, err := util.TryCoerceToBigFloat(target)
 	if err != nil {
-		return fmt.Errorf("%w: %v", ErrTypeConversionFailed, err)
+		return UnexpectedComparisonTargetTypeError("compare_bigfloat", (*big.Float)(nil), target, nil)
 	}
-	cmp := asBF.Cmp(target.(*big.Float))
+
+	cmp := actualBF.Cmp(expectedBF)
 
 	switch op {
 	case Equal:
-		if cmp != 0 {
-			return ErrComparisonFailed
+		if cmp == 0 {
+			return nil
 		}
 	case NotEqual:
 		if cmp == 0 {
-			return ErrComparisonFailed
+			exp, _ := expectedBF.Float64()
+			act, _ := actualBF.Float64()
+			return ComparisonFailedError(op, exp, act)
 		}
 	case GreaterThan:
-		if cmp != 1 {
-			return ErrComparisonFailed
+		if cmp == 1 {
+			return nil
 		}
 	case GreaterThanOrEqualTo:
-		if cmp == -1 {
-			return ErrComparisonFailed
+		if cmp == 0 || cmp == 1 {
+			return nil
 		}
 	case LessThan:
-		if cmp != 1 {
-			return ErrComparisonFailed
+		if cmp == -1 {
+			return nil
 		}
 	case LessThanOrEqualTo:
-		if cmp == 1 {
-			return ErrComparisonFailed
+		if cmp == -1 || cmp == 0 {
+			return nil
 		}
 
 	default:
-		return ErrNoComparisonFuncRegistered
+		return NoComparisonFuncRegisteredError(av, op)
 	}
 
-	return nil
+	exp, _ := expectedBF.Float64()
+	act, _ := actualBF.Float64()
+	return ComparisonFailedError(op, exp, act)
 }
 
-func compareString(av attr.Value, op CompareOp, target interface{}) error {
-	asStr := conv.AttributeValueToString(av)
+func compareString(av attr.Value, op CompareOp, target interface{}, _ ...interface{}) error {
+	actStr := conv.StringValueToString(av)
+	tgtStr, ok := target.(string)
+	if !ok {
+		return UnexpectedComparisonTargetTypeError("compare_string", "", target, nil)
+	}
 	switch op {
 	case Equal:
-		if asStr != target.(string) {
-			return ErrComparisonFailed
+		if actStr == tgtStr {
+			return nil
 		}
 	case NotEqual:
-		if asStr == target.(string) {
-			return ErrComparisonFailed
+		if actStr != tgtStr {
+			return nil
 		}
 
 	default:
-		return ErrNoComparisonFuncRegistered
+		return NoComparisonFuncRegisteredError(av, op)
 	}
 
-	return nil
+	return ComparisonFailedError(op, tgtStr, actStr)
+}
+
+func compareStrings(av attr.Value, op CompareOp, target interface{}, meta ...interface{}) error {
+	var (
+		expStrs         []string
+		caseInsensitive bool
+	)
+
+	if len(meta) > 0 {
+		if b, ok := meta[0].(bool); ok {
+			caseInsensitive = b
+		}
+	}
+
+	actStr := conv.AttributeValueToString(av)
+	if caseInsensitive {
+		actStr = strings.ToLower(actStr)
+	}
+
+	if targ, ok := target.([]interface{}); !ok {
+		return UnexpectedComparisonTargetTypeError("compare_strings", make([]string, 0), target, nil)
+	} else {
+		expStrs = make([]string, len(targ))
+		for i, v := range targ {
+			if s, ok := v.(string); ok {
+				if caseInsensitive {
+					expStrs[i] = s
+				} else {
+					expStrs[i] = strings.ToLower(s)
+				}
+			} else {
+				return UnexpectedComparisonTargetTypeError("compare_strings", make([]string, 0), v, nil)
+			}
+		}
+	}
+
+	switch op {
+	case OneOf:
+		for _, v := range expStrs {
+			if actStr == v {
+				return nil
+			}
+		}
+
+	case NotOneOf:
+		for _, v := range expStrs {
+			if actStr == v {
+				return ComparisonFailedError(op, actStr, expStrs)
+			}
+		}
+		return nil
+
+	default:
+		return NoComparisonFuncRegisteredError(av, op)
+	}
+
+	return ComparisonFailedError(op, actStr, expStrs)
 }
 
 // DefaultComparisonFuncs returns the complete list of default comparison functions
 func DefaultComparisonFuncs() map[string]ComparisonFunc {
 	return map[string]ComparisonFunc{
-		util.KeyFN(false):          compareBool,
-		util.KeyFN(0.0):            compareFloat64,
-		util.KeyFN(int64(0)):       compareInt64,
-		util.KeyFN(0):              compareInt,
-		util.KeyFN(new(big.Float)): compareBigFloat,
-		util.KeyFN(""):             compareString,
+		util.KeyFN(false):             compareBool,
+		util.KeyFN(0.0):               compareFloat64,
+		util.KeyFN(int64(0)):          compareInt64,
+		util.KeyFN(0):                 compareInt,
+		util.KeyFN((*big.Float)(nil)): compareBigFloat,
+		util.KeyFN(""):                compareString,
+		util.KeyFN(make([]string, 0)): compareStrings,
 	}
 }
 
@@ -248,50 +358,67 @@ func CompareAttrValues(av attr.Value, op CompareOp, target interface{}) error {
 	if fn, ok := GetComparisonFunc(target); ok {
 		return fn(av, op, target)
 	} else {
-		return fmt.Errorf("%w for operation %q with expected type %T", ErrNoComparisonFuncRegistered, op, target)
+		return fmt.Errorf("%w for operation %q with target type %T", ErrNoComparisonFuncRegistered, op, target)
 	}
 }
 
-func addComparisonFailedDiagnostic(op CompareOp, expected interface{}, req tfsdk.ValidateAttributeRequest, resp *tfsdk.ValidateAttributeResponse) {
+func addComparisonFailedDiagnostic(op CompareOp, target interface{}, req tfsdk.ValidateAttributeRequest, resp *tfsdk.ValidateAttributeResponse, err error) {
 	switch op {
 	case Equal:
 		resp.Diagnostics.AddAttributeError(
 			req.AttributePath,
-			"Value does not match expected",
-			fmt.Sprintf("Value must not be less than %q", conv.GoNumberToString(expected)),
+			"Attribute value does not match expected",
+			fmt.Sprintf("Attribute value must equal %s; err=%v", util.GetPrintableTypeWithValue(target), err),
 		)
 	case NotEqual:
 		resp.Diagnostics.AddAttributeError(
 			req.AttributePath,
-			fmt.Sprintf("Value must not equal %q", conv.GoNumberToString(expected)),
-			fmt.Sprintf("Value must not equal %q", conv.GoNumberToString(expected)),
+			"Attribute value is not allowed",
+			fmt.Sprintf("Attribute value must not equal %s; err=%v", util.GetPrintableTypeWithValue(target), err),
 		)
 	case LessThan:
 		resp.Diagnostics.AddAttributeError(
 			req.AttributePath,
 			"Value is above threshold",
-			fmt.Sprintf("Value must be less than %q", conv.GoNumberToString(expected)),
+			fmt.Sprintf("Attribute value must be less than %s; err=%v", util.GetPrintableTypeWithValue(target), err),
 		)
 	case LessThanOrEqualTo:
 		resp.Diagnostics.AddAttributeError(
 			req.AttributePath,
 			"Value is above threshold",
-			fmt.Sprintf("Value must be less than or equal to %q", conv.GoNumberToString(expected)),
+			fmt.Sprintf("Attribute value must be less than or equal to %s; err=%v", util.GetPrintableTypeWithValue(target), err),
 		)
 	case GreaterThan:
 		resp.Diagnostics.AddAttributeError(
 			req.AttributePath,
 			"Value is below threshold",
-			fmt.Sprintf("Value must be greater than %q", conv.GoNumberToString(expected)),
+			fmt.Sprintf("Attribute value must be greater than %s; err=%v", util.GetPrintableTypeWithValue(target), err),
 		)
 	case GreaterThanOrEqualTo:
 		resp.Diagnostics.AddAttributeError(
 			req.AttributePath,
 			"Value is below threshold",
-			fmt.Sprintf("Value must be greater than or equal to %q", conv.GoNumberToString(expected)),
+			fmt.Sprintf("Attribute value must be greater than or equal to %s; err=%v", util.GetPrintableTypeWithValue(target), err),
+		)
+	case OneOf:
+		resp.Diagnostics.AddAttributeError(
+			req.AttributePath,
+			"Value is not within allowed list",
+			fmt.Sprintf("Attribute value must be one of %s; err=%v", util.GetPrintableTypeWithValue(target), err),
+		)
+
+	case NotOneOf:
+		resp.Diagnostics.AddAttributeError(
+			req.AttributePath,
+			"Value is not within allowed list",
+			fmt.Sprintf("Attribute value must not be one of %s; err=%v", util.GetPrintableTypeWithValue(target), err),
 		)
 
 	default:
-		panic(fmt.Sprintf("no diagnostic message handler defined for op %q for attribute %q", op, req.AttributePath.String()))
+		resp.Diagnostics.AddAttributeError(
+			req.AttributePath,
+			"Unknown comparison operation",
+			fmt.Sprintf("Specified unknown comparison operation: %s", op),
+		)
 	}
 }

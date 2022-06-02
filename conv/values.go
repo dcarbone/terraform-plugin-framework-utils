@@ -9,8 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-type TFTypeValueType uint8
-
 // ValueToBoolType ensures we have a types.Bool literal
 func ValueToBoolType(v attr.Value) types.Bool {
 	if vb, ok := v.(types.Bool); ok {
@@ -128,70 +126,69 @@ func ValueToStringType(v attr.Value) types.String {
 //
 // A 'nil' response from this function means the attribute's value was defined to a non-"empty" value at runtime. See
 // function body for a particular type if you're interested in what "empty" means.
-func TestAttributeValueState(v attr.Value) error {
+func TestAttributeValueState(av attr.Value) error {
 	var (
 		undefined bool
 		null      bool
 		empty     bool
 	)
 
-	// first, check for unknown and null
-	switch v.(type) {
-	case types.Bool, *types.Bool:
-		tv := ValueToBoolType(v)
-		undefined = tv.Unknown
-		null = tv.Null
+	switch av.(type) {
 	// bool values cannot be "empty"
-
-	case types.Float64, *types.Float64:
-		tv := ValueToFloat64Type(v)
+	case types.Bool, *types.Bool:
+		tv := ValueToBoolType(av)
 		undefined = tv.Unknown
 		null = tv.Null
+
 	// float values cannot be "empty"
-
-	case types.Int64, *types.Int64:
-		tv := ValueToInt64Type(v)
+	case types.Float64, *types.Float64:
+		tv := ValueToFloat64Type(av)
 		undefined = tv.Unknown
 		null = tv.Null
+
 	// int values cannot be "empty"
+	case types.Int64, *types.Int64:
+		tv := ValueToInt64Type(av)
+		undefined = tv.Unknown
+		null = tv.Null
 
 	case types.List, *types.List:
-		tv := ValueToListType(v)
+		tv := ValueToListType(av)
 		undefined = tv.Unknown
 		null = tv.Null
-		empty = AttributeValueLength(v) == 0
+		empty = AttributeValueLength(av) == 0
 
 	case types.Map, *types.Map:
-		tv := ValueToMapType(v)
+		tv := ValueToMapType(av)
 		undefined = tv.Unknown
 		null = tv.Null
-		empty = AttributeValueLength(v) == 0
+		empty = AttributeValueLength(av) == 0
 
 	case types.Number, *types.Number:
-		tv := ValueToNumberType(v)
+		tv := ValueToNumberType(av)
 		undefined = tv.Unknown
 		null = tv.Null
 
+	// todo: implement object "emptiness" check
 	case types.Object, *types.Object:
-		tv := ValueToObjectType(v)
+		tv := ValueToObjectType(av)
 		undefined = tv.Unknown
 		null = tv.Null
-	// todo: implement object "emptiness" check
 
 	case types.Set, *types.Set:
-		tv := ValueToSetType(v)
+		tv := ValueToSetType(av)
 		undefined = tv.Unknown
 		null = tv.Null
-		empty = AttributeValueLength(v) > 0
+		empty = AttributeValueLength(av) > 0
 
 	case types.String, *types.String:
-		tv := ValueToStringType(v)
+		tv := ValueToStringType(av)
 		undefined = tv.Unknown
 		null = tv.Null
-		empty = StringValueToString(v) == ""
+		empty = StringValueToString(av) == ""
 
 	default:
-		panic(fmt.Sprintf("no way to test for valued state for types %T", v))
+		return ValueTypeUnhandledError("length_check", av)
 	}
 
 	if undefined {
@@ -257,7 +254,22 @@ func AttributeValueToString(v attr.Value) string {
 		return StringValueToString(v)
 
 	default:
-		panic(fmt.Sprintf("no stringer func registered for type %T", v))
+		return fmt.Sprintf("%T", v)
+	}
+}
+
+// AttributeValueToStrings attempts to convert the provided attr.Value into a slice of strings.
+func AttributeValueToStrings(av attr.Value) []string {
+	switch av.(type) {
+	case types.List, *types.List:
+		return StringListToStrings(av)
+
+	case types.Set, *types.Set:
+		return StringSetToStrings(av)
+	default:
+		out := make([]string, 0)
+		out = append(out, ValueToStringType(av).Value)
+		return out
 	}
 }
 
@@ -410,13 +422,35 @@ func StringValueToStringPtr(v attr.Value) *string {
 	return vPtr
 }
 
+// StringListToStrings accepts an instance of either types.List or *types.List where ElemType MUST be types.StringType,
+// returning a slice of strings of the value of each element
+func StringListToStrings(v attr.Value) []string {
+	vt := ValueToListType(v)
+	out := make([]string, len(vt.Elems))
+	for i, ve := range vt.Elems {
+		out[i] = StringValueToString(ve)
+	}
+	return out
+}
+
+// StringSetToStrings accepts an instance of either types.Set or *types.Set where ElemType MUST be types.StringType,
+// returning a slice of strings of the value of each element
+func StringSetToStrings(v attr.Value) []string {
+	vt := ValueToSetType(v)
+	out := make([]string, len(vt.Elems))
+	for i, ve := range vt.Elems {
+		out[i] = StringValueToString(ve)
+	}
+	return out
+}
+
 // Int64ListToInts accepts an instance of either types.List or *types.List where ElemType MUST be types.Int64Type,
 // returning a slice of ints of the value of each element.
 func Int64ListToInts(v attr.Value) []int {
 	vt := ValueToListType(v)
 	out := make([]int, len(vt.Elems))
 	for i, ve := range vt.Elems {
-		out[i] = Int64ValueToInt(ve.(types.Int64))
+		out[i] = Int64ValueToInt(ve)
 	}
 	return out
 }
@@ -427,7 +461,7 @@ func Int64SetToInts(v attr.Value) []int {
 	vt := ValueToSetType(v)
 	out := make([]int, len(vt.Elems))
 	for i, ve := range vt.Elems {
-		out[i] = Int64ValueToInt(ve.(types.Int64))
+		out[i] = Int64ValueToInt(ve)
 	}
 	return out
 }
@@ -451,7 +485,7 @@ func AttributeValueToFloat64(v attr.Value) (float64, big.Accuracy, error) {
 		return f, big.Exact, err
 
 	default:
-		panic(fmt.Sprintf("unable to determine float64 value of type %T", v))
+		return 0, 0, ValueTypeUnhandledError("attr_to_float64", v)
 	}
 }
 
@@ -480,7 +514,7 @@ func AttributeValueToInt64(v attr.Value) (int64, big.Accuracy, error) {
 		return int64(i), big.Exact, err
 
 	default:
-		panic(fmt.Sprintf("unable to determine int64 value of type %T", v))
+		return 0, 0, ValueTypeUnhandledError("attr_to_int64", v)
 	}
 }
 
@@ -502,7 +536,7 @@ func AttributeValueToBigFloat(v attr.Value) (*big.Float, error) {
 		return bf, err
 
 	default:
-		panic(fmt.Sprintf("unable to parse type %T into *big.Float", v))
+		return nil, ValueTypeUnhandledError("attr_to_bigfloat", v)
 	}
 }
 
