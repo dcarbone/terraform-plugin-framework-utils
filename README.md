@@ -108,54 +108,54 @@ your own [ComparisonFunc](validation/comparison.go#44) using [SetComparisonFunc]
 {
     Validators: []tfsdk.AttributeValidator{
         // equal
-        validation.Compare(validation.Equal, 5),
+		validation.Compare(validation.Equal, 5),
 		// string comparisons are case sensitive by default
-		validation.Compare(validation.Equal, "five")
+		validation.Compare(validation.Equal, "five"),
 		// passing true as the 3rd arg executes a case-insensitive comparison with strings
-		validation.Compare(validation.Equal, "fIve", true)
+		validation.Compare(validation.Equal, "fIve", true),
 		// you may also equate string slices
-		validation.Compare(validation.Equal, []string{"one", "two"})
-        validation.Compare(validation.Equal, []string{"oNe", "twO"}, true)
+		validation.Compare(validation.Equal, []string{"one", "two"}),
+		validation.Compare(validation.Equal, []string{"oNe", "twO"}, true),
 		// you can also assert that a list of ints is equivalent
-		validation.Compare(validation.Equal, []int{1, 2})
+		validation.Compare(validation.Equal, []int{1, 2}),
 
         // less than
-        validation.Compare(validation.LessThan, 10),
+		validation.Compare(validation.LessThan, 10),
 
         // less than or equal to
-        validation.Compare(validation.LessThanOrEqualTo, 10),
+		validation.Compare(validation.LessThanOrEqualTo, 10),
 
         // greater than
-        validation.Compare(validation.GreaterThan, 5),
+		validation.Compare(validation.GreaterThan, 5),
 
         // greater than or equal to
-        validation.Compare(validation.GreaterThanOrEqualTo, 5),
+		validation.Compare(validation.GreaterThanOrEqualTo, 5),
 
         // not equal
-        validation.Compare(validation.NotEqual, 10),
+		validation.Compare(validation.NotEqual, 10),
 		// string comparisons are case sensitive by default
-		validation.Compare(validation.NotEqual, "ten")
+		validation.Compare(validation.NotEqual, "ten"),
 		// passing true as the 3rd arg executes a case-insensitive comparison with strings
-		validation.Compare(validation.NotEqual, "tEn", true)
+		validation.Compare(validation.NotEqual, "tEn", true),
 		// you may also compare string slices
-		validation.Compare(validation.NotEqual, []string{"one", "two"})
-        validation.Compare(validation.NotEqual, []string{"oNe", "twO"}, true)
+		validation.Compare(validation.NotEqual, []string{"one", "two"}),
+		validation.Compare(validation.NotEqual, []string{"oNe", "twO"}, true),
 		// you can also assert that a list of ints is not equivalent
-        validation.Compare(validation.NotEqual, []int{1, 2})
+		validation.Compare(validation.NotEqual, []int{1, 2}),
 
         // one of
 		// currently OneOf only works with strings and ints
-		validation.Compare(validation.OneOf, []string{"one", "two"})
+		validation.Compare(validation.OneOf, []string{"one", "two"}),
 		// you can provide true for the 3rd parameter to perform a case-insensitive comparison
-		validation.Compare(validation.OneOf, []string{"one", "two"}, true)
-		validation.Compare(validation.OneOf []int{1, 2})
+		validation.Compare(validation.OneOf, []string{"one", "two"}, true),
+		validation.Compare(validation.OneOf []int{1, 2}),
 		
 		// not one of
 		// currently NotOneOf only works with strings and ints
-		validation.Compare(validation.NotOneOf, []string{"one", "two"})
+		validation.Compare(validation.NotOneOf, []string{"one", "two"}),
 		// you can provide true for the 3rd parameter to perform a case-insensitive comparison
-		validation.Compare(validation.NotOneOf, []string{"one", "two"}, true)
-		validation.Compare(validation.NotOneOf []int{1, 2})
+		validation.Compare(validation.NotOneOf, []string{"one", "two"}, true),
+		validation.Compare(validation.NotOneOf []int{1, 2}),
     }
 }
 ```
