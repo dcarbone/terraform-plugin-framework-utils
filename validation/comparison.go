@@ -2,6 +2,7 @@ package validation
 
 import (
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"math/big"
 	"strings"
 	"sync"
@@ -78,7 +79,7 @@ func compareBool(av attr.Value, op CompareOp, target interface{}, _ ...interface
 	actBool := conv.BoolValueToBool(av)
 	expBool, err := util.TryCoerceToBool(target)
 	if err != nil {
-		return UnexpectedComparisonTargetTypeError("compare_bool", true, target, err)
+		return UnexpectedComparisonTargetTypeError("compare_bool", target, op, true, err)
 	}
 	switch op {
 	case Equal:
@@ -91,10 +92,10 @@ func compareBool(av attr.Value, op CompareOp, target interface{}, _ ...interface
 		}
 
 	default:
-		return NoComparisonFuncRegisteredError(av, op)
+		return NoComparisonFuncRegisteredError(op, av)
 	}
 
-	return ComparisonFailedError(op, expBool, actBool)
+	return ComparisonFailedError(actBool, op, expBool)
 }
 
 func compareFloat64(av attr.Value, op CompareOp, target interface{}, _ ...interface{}) error {
@@ -104,7 +105,7 @@ func compareFloat64(av attr.Value, op CompareOp, target interface{}, _ ...interf
 	}
 	expF64, err := util.TryCoerceToFloat64(target)
 	if err != nil {
-		return UnexpectedComparisonTargetTypeError("compare_float64", float64(0), target, err)
+		return UnexpectedComparisonTargetTypeError("compare_float64", target, op, float64(0), err)
 	}
 
 	switch op {
@@ -134,10 +135,10 @@ func compareFloat64(av attr.Value, op CompareOp, target interface{}, _ ...interf
 		}
 
 	default:
-		return NoComparisonFuncRegisteredError(av, op)
+		return NoComparisonFuncRegisteredError(op, av)
 	}
 
-	return ComparisonFailedError(op, expF64, actF64)
+	return ComparisonFailedError(actF64, op, expF64)
 }
 
 func compareInt64(av attr.Value, op CompareOp, target interface{}, _ ...interface{}) error {
@@ -147,7 +148,7 @@ func compareInt64(av attr.Value, op CompareOp, target interface{}, _ ...interfac
 	}
 	tgtI64, err := util.TryCoerceToInt64(target)
 	if err != nil {
-		return UnexpectedComparisonTargetTypeError("compare_int64", int64(0), target, err)
+		return UnexpectedComparisonTargetTypeError("compare_int64", target, op, int64(0), err)
 	}
 
 	switch op {
@@ -177,10 +178,10 @@ func compareInt64(av attr.Value, op CompareOp, target interface{}, _ ...interfac
 		}
 
 	default:
-		return NoComparisonFuncRegisteredError(av, op)
+		return NoComparisonFuncRegisteredError(op, av)
 	}
 
-	return ComparisonFailedError(op, tgtI64, actI64)
+	return ComparisonFailedError(actI64, op, tgtI64)
 }
 
 func compareInt(av attr.Value, op CompareOp, target interface{}, _ ...interface{}) error {
@@ -191,7 +192,7 @@ func compareBigFloat(av attr.Value, op CompareOp, target interface{}, _ ...inter
 	actualBF := conv.NumberValueToBigFloat(av)
 	expectedBF, err := util.TryCoerceToBigFloat(target)
 	if err != nil {
-		return UnexpectedComparisonTargetTypeError("compare_bigfloat", (*big.Float)(nil), target, nil)
+		return UnexpectedComparisonTargetTypeError("compare_bigfloat", target, op, (*big.Float)(nil), nil)
 	}
 
 	cmp := actualBF.Cmp(expectedBF)
@@ -205,7 +206,7 @@ func compareBigFloat(av attr.Value, op CompareOp, target interface{}, _ ...inter
 		if cmp == 0 {
 			exp, _ := expectedBF.Float64()
 			act, _ := actualBF.Float64()
-			return ComparisonFailedError(op, exp, act)
+			return ComparisonFailedError(act, op, exp)
 		}
 	case GreaterThan:
 		if cmp == 1 {
@@ -225,19 +226,19 @@ func compareBigFloat(av attr.Value, op CompareOp, target interface{}, _ ...inter
 		}
 
 	default:
-		return NoComparisonFuncRegisteredError(av, op)
+		return NoComparisonFuncRegisteredError(op, av)
 	}
 
 	exp, _ := expectedBF.Float64()
 	act, _ := actualBF.Float64()
-	return ComparisonFailedError(op, exp, act)
+	return ComparisonFailedError(act, op, exp)
 }
 
 func compareString(av attr.Value, op CompareOp, target interface{}, _ ...interface{}) error {
 	actStr := conv.StringValueToString(av)
 	tgtStr, ok := target.(string)
 	if !ok {
-		return UnexpectedComparisonTargetTypeError("compare_string", "", target, nil)
+		return UnexpectedComparisonTargetTypeError("compare_string", target, op, "", nil)
 	}
 	switch op {
 	case Equal:
@@ -250,15 +251,124 @@ func compareString(av attr.Value, op CompareOp, target interface{}, _ ...interfa
 		}
 
 	default:
-		return NoComparisonFuncRegisteredError(av, op)
+		return NoComparisonFuncRegisteredError(op, av)
 	}
 
-	return ComparisonFailedError(op, tgtStr, actStr)
+	return ComparisonFailedError(actStr, op, tgtStr)
+}
+
+func compareStringsToString(av types.String, op CompareOp, targets []string, caseInsensitive bool) error {
+	var actStr string
+	if caseInsensitive {
+		actStr = strings.ToLower(av.Value)
+	} else {
+		actStr = av.Value
+	}
+
+	switch op {
+	case OneOf:
+		for _, v := range targets {
+			if actStr == v {
+				return nil
+			}
+		}
+
+	case NotOneOf:
+		for _, v := range targets {
+			if actStr == v {
+				return ComparisonFailedError(targets, op, actStr)
+			}
+		}
+		return nil
+
+	default:
+		return NoComparisonFuncRegisteredError(op, targets)
+	}
+
+	return ComparisonFailedError(av.Value, op, targets)
+}
+
+func compareStringsToStrings(av attr.Value, op CompareOp, targets []string, caseInsensitive bool) error {
+	var (
+		actStrs    []string
+		actStrsLen int
+		tgtStrsLen int
+	)
+
+	tgtStrsLen = len(targets)
+
+	switch av.(type) {
+	case types.List, *types.List:
+		asList := conv.ValueToListType(av)
+		if asList.ElemType != types.StringType {
+			return UnexpectedComparisonActualTypeError("compare_strings", fmt.Sprintf("%T{ElemType: %T}", asList, asList.ElemType), op, fmt.Sprintf("%T{ElemType: %T}", types.ListType{}, types.StringType), nil)
+		}
+
+		actStrs = conv.StringListToStrings(av)
+		actStrsLen = len(actStrs)
+		if caseInsensitive {
+			for i, v := range actStrs {
+				actStrs[i] = strings.ToLower(v)
+			}
+		}
+
+	case types.Set, *types.Set:
+		asSet := conv.ValueToSetType(av)
+		if asSet.ElemType != types.StringType {
+			return UnexpectedComparisonActualTypeError("compare_strings", fmt.Sprintf("%T{ElemType: %T}", asSet, asSet.ElemType), op, fmt.Sprintf("%T{ElemType: %T}", types.SetType{}, types.StringType), nil)
+		}
+
+		actStrs = conv.StringSetToStrings(av)
+		actStrsLen = len(actStrs)
+		if caseInsensitive {
+			for i, v := range actStrs {
+				actStrs[i] = strings.ToLower(v)
+			}
+		}
+
+	default:
+		return UnexpectedComparisonActualTypeError("compare_strings", av, op, strings.Join(
+			[]string{
+				fmt.Sprintf("%T", ""),
+				fmt.Sprintf("%T{ElemType: %T}", types.ListType{}, types.StringType),
+				fmt.Sprintf("%T{ElemType: %T}", types.SetType{}, types.StringType),
+			},
+			","), nil)
+	}
+
+	actStrsLen = len(actStrs)
+
+	switch op {
+	case Equal:
+		if actStrsLen == tgtStrsLen {
+			for i, v := range actStrs {
+				if targets[i] != v {
+					return ComparisonFailedError(actStrs[i], op, targets[i])
+				}
+			}
+			return nil
+		}
+
+	case NotEqual:
+		if actStrsLen != tgtStrsLen {
+			return nil
+		}
+
+		for i, v := range actStrs {
+			if targets[i] != v {
+				return nil
+			}
+		}
+	default:
+		return NoComparisonFuncRegisteredError(op, av)
+	}
+
+	return ComparisonFailedError(actStrs, op, targets)
 }
 
 func compareStrings(av attr.Value, op CompareOp, target interface{}, meta ...interface{}) error {
 	var (
-		expStrs         []string
+		tgtStrs         []string
 		caseInsensitive bool
 	)
 
@@ -268,49 +378,35 @@ func compareStrings(av attr.Value, op CompareOp, target interface{}, meta ...int
 		}
 	}
 
-	actStr := conv.AttributeValueToString(av)
-	if caseInsensitive {
-		actStr = strings.ToLower(actStr)
-	}
-
-	if targ, ok := target.([]interface{}); !ok {
-		return UnexpectedComparisonTargetTypeError("compare_strings", make([]string, 0), target, nil)
+	if targ, ok := target.([]string); !ok {
+		return UnexpectedComparisonTargetTypeError("compare_strings", target, op, make([]string, 0), nil)
 	} else {
-		expStrs = make([]string, len(targ))
-		for i, v := range targ {
-			if s, ok := v.(string); ok {
-				if caseInsensitive {
-					expStrs[i] = s
-				} else {
-					expStrs[i] = strings.ToLower(s)
-				}
-			} else {
-				return UnexpectedComparisonTargetTypeError("compare_strings", make([]string, 0), v, nil)
+		tgtStrs = make([]string, len(targ))
+		if caseInsensitive {
+			for i, v := range targ {
+				tgtStrs[i] = strings.ToLower(v)
 			}
+		} else {
+			copy(tgtStrs, targ)
 		}
 	}
 
-	switch op {
-	case OneOf:
-		for _, v := range expStrs {
-			if actStr == v {
-				return nil
-			}
-		}
+	switch av.(type) {
+	case types.String, *types.String:
+		return compareStringsToString(conv.ValueToStringType(av), op, tgtStrs, caseInsensitive)
 
-	case NotOneOf:
-		for _, v := range expStrs {
-			if actStr == v {
-				return ComparisonFailedError(op, actStr, expStrs)
-			}
-		}
-		return nil
+	case types.List, *types.List, types.Set, *types.Set:
+		return compareStringsToStrings(av, op, tgtStrs, caseInsensitive)
 
 	default:
-		return NoComparisonFuncRegisteredError(av, op)
+		return UnexpectedComparisonActualTypeError("compare_strings", av, op, strings.Join(
+			[]string{
+				fmt.Sprintf("%T", ""),
+				fmt.Sprintf("%T{ElemType: %T}", types.ListType{}, types.StringType),
+				fmt.Sprintf("%T{ElemType: %T}", types.SetType{}, types.StringType),
+			},
+			","), nil)
 	}
-
-	return ComparisonFailedError(op, actStr, expStrs)
 }
 
 // DefaultComparisonFuncs returns the complete list of default comparison functions
@@ -354,9 +450,9 @@ func init() {
 // is returned.
 //
 // If a function is registered and the comparison fails, an ErrComparisonFailed error will be returned
-func CompareAttrValues(av attr.Value, op CompareOp, target interface{}) error {
+func CompareAttrValues(av attr.Value, op CompareOp, target interface{}, meta ...interface{}) error {
 	if fn, ok := GetComparisonFunc(target); ok {
-		return fn(av, op, target)
+		return fn(av, op, target, meta...)
 	} else {
 		return fmt.Errorf("%w for operation %q with target type %T", ErrNoComparisonFuncRegistered, op, target)
 	}
