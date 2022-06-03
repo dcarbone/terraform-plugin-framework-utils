@@ -50,7 +50,7 @@ func (op CompareOp) Name() string {
 		return "not_one_of"
 
 	default:
-		return "UNKNOWN"
+		return string(op)
 	}
 }
 
