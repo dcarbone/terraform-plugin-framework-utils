@@ -497,21 +497,3 @@ func MutuallyInclusiveSibling(siblingAttr string) AttributeValidator {
 
 	return v
 }
-
-func OneOfStringTest(values []string, caseSensitive bool) TestFunc {
-	return func(ctx context.Context, req tfsdk.ValidateAttributeRequest, resp *tfsdk.ValidateAttributeResponse) {
-
-	}
-}
-
-func OneOfString(values []string, caseSensitive bool) AttributeValidator {
-	v := NewValidator(
-		fmt.Sprintf(`Ensure attribute has a value from set ["%s"]`, strings.Join(values, `", "`)),
-		fmt.Sprintf(`Ensure attribute has a value from set ["%s"]`, strings.Join(values, `", "`)),
-		OneOfStringTest(values, caseSensitive),
-		true,
-		true,
-	)
-
-	return v
-}
