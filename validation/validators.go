@@ -233,13 +233,13 @@ func Length(minL, maxL int) AttributeValidator {
 }
 
 // CompareTest executes a registered comparison function against the target attribute's value
-func CompareTest(op CompareOp, target interface{}) TestFunc {
+func CompareTest(op CompareOp, target interface{}, meta ...interface{}) TestFunc {
 	return func(ctx context.Context, req tfsdk.ValidateAttributeRequest, resp *tfsdk.ValidateAttributeResponse) {
-		err := CompareAttrValues(req.AttributeConfig, op, target)
+		err := CompareAttrValues(req.AttributeConfig, op, target, meta...)
 		if err != nil {
 			switch true {
 			case errors.Is(err, ErrComparisonFailed):
-				addComparisonFailedDiagnostic(op, target, req, resp)
+				addComparisonFailedDiagnostic(op, target, req, resp, err)
 
 			case errors.Is(err, ErrTypeConversionFailed):
 				resp.Diagnostics.AddAttributeError(
@@ -261,11 +261,11 @@ func CompareTest(op CompareOp, target interface{}) TestFunc {
 // Compare executes the specified comparison to the target value for an attribute.
 //
 // Type comparisons
-func Compare(op CompareOp, target interface{}) AttributeValidator {
+func Compare(op CompareOp, target interface{}, meta ...interface{}) AttributeValidator {
 	v := NewValidator(
 		fmt.Sprintf("Asserts an attribute is %q to %T(%[2]v)", op, target),
 		fmt.Sprintf("Asserts an attribute is %q to %T(%[2]v)", op, target),
-		CompareTest(op, target),
+		CompareTest(op, target, meta...),
 		true,
 		true,
 	)
@@ -493,6 +493,24 @@ func MutuallyInclusiveSibling(siblingAttr string) AttributeValidator {
 		MutuallyInclusiveSiblingTest(siblingAttr),
 		false,
 		false,
+	)
+
+	return v
+}
+
+func OneOfStringTest(values []string, caseSensitive bool) TestFunc {
+	return func(ctx context.Context, req tfsdk.ValidateAttributeRequest, resp *tfsdk.ValidateAttributeResponse) {
+
+	}
+}
+
+func OneOfString(values []string, caseSensitive bool) AttributeValidator {
+	v := NewValidator(
+		fmt.Sprintf(`Ensure attribute has a value from set ["%s"]`, strings.Join(values, `", "`)),
+		fmt.Sprintf(`Ensure attribute has a value from set ["%s"]`, strings.Join(values, `", "`)),
+		OneOfStringTest(values, caseSensitive),
+		true,
+		true,
 	)
 
 	return v
