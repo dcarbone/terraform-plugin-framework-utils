@@ -39,28 +39,23 @@ func IsComparisonFailedError(err error) bool {
 	return util.MatchError(err, ErrComparisonFailed)
 }
 
-func UnexpectedComparisonTargetTypeError(scope string, actual interface{}, op CompareOp, expected interface{}, err error) error {
+func UnexpectedComparisonTargetTypeError(scope string, actualTarget interface{}, op CompareOp, expectedTarget interface{}, err error) error {
 	if err != nil {
-		return fmt.Errorf("%w: scope=%q; op=%q; actual=%T; err=%v", ErrUnexpectedComparisonTargetType, scope, op.Name(), actual, err)
+		return fmt.Errorf("%w: scope=%q; op=%q; actual=%T; expected=%T, err=%v", ErrUnexpectedComparisonTargetType, scope, op.Name(), actualTarget, expectedTarget, err)
 	}
-	if expected == nil {
-		return fmt.Errorf("%w: scope=%q; op=%q; type=%T", ErrUnexpectedComparisonTargetType, scope, op.Name(), actual)
-	}
-	return fmt.Errorf("%w: scope=%q; op=%q; expected=%T; actual=%T", ErrUnexpectedComparisonTargetType, scope, op.Name(), expected, actual)
+	return fmt.Errorf("%w: scope=%q; op=%q; actual=%T; expected=%T", ErrUnexpectedComparisonTargetType, scope, op.Name(), actualTarget, expectedTarget)
 }
 
 func IsUnexpectedAttributeValueTypeError(err error) bool {
 	return util.MatchError(err, ErrUnexpectedComparisonTargetType)
 }
 
-func UnexpectedComparisonActualTypeError(scope string, actual interface{}, op CompareOp, expected interface{}, err error) error {
+func UnexpectedComparisonActualTypeError(scope string, actualActual interface{}, op CompareOp, expectedActual interface{}, err error) error {
+	// TODO: enable more detailed type printing, particularly for attr.Value representations
 	if err != nil {
-		return fmt.Errorf("%w: scope=%q; op=%q; actual=%T; err=%v", ErrUnexpectedComparisonActualType, scope, op.Name(), actual, err)
+		return fmt.Errorf("%w: scope=%q; op=%q; actual=%T; expected=%T; err=%v", ErrUnexpectedComparisonActualType, scope, op.Name(), actualActual, expectedActual, err)
 	}
-	if expected == nil {
-		return fmt.Errorf("%w: scope=%q; op=%q; type=%T", ErrUnexpectedComparisonActualType, scope, op.Name(), actual)
-	}
-	return fmt.Errorf("%w: scope=%q; op=%q; expected=%T; actual=%T", ErrUnexpectedComparisonActualType, scope, op.Name(), expected, actual)
+	return fmt.Errorf("%w: scope=%q; op=%q; expected=%T; actual=%T", ErrUnexpectedComparisonActualType, scope, op.Name(), expectedActual, actualActual)
 }
 
 func IsUnexpectedComparisonActualType(err error) bool {

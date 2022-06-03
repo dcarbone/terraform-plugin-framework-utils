@@ -52,6 +52,114 @@ func TryCoerceToInt(in interface{}) (int, error) {
 	}
 }
 
+func TryCoerceToInts(in interface{}) ([]int, error) {
+	switch in.(type) {
+	case []int:
+		out := make([]int, len(in.([]int)))
+		copy(out, in.([]int))
+		return out, nil
+	case []int8:
+		out := make([]int, len(in.([]int8)))
+		for i, v := range in.([]int8) {
+			out[i] = int(v)
+		}
+		return out, nil
+	case []int16:
+		out := make([]int, len(in.([]int16)))
+		for i, v := range in.([]int16) {
+			out[i] = int(v)
+		}
+		return out, nil
+	case []int32:
+		out := make([]int, len(in.([]int32)))
+		for i, v := range in.([]int32) {
+			out[i] = int(v)
+		}
+		return out, nil
+	case []int64:
+		out := make([]int, len(in.([]int64)))
+		for i, v := range in.([]int64) {
+			out[i] = int(v)
+		}
+		return out, nil
+
+	case []uint:
+		out := make([]int, len(in.([]uint)))
+		for i, v := range in.([]uint) {
+			out[i] = int(v)
+		}
+		return out, nil
+	case []uint8:
+		out := make([]int, len(in.([]uint8)))
+		for i, v := range in.([]uint8) {
+			out[i] = int(v)
+		}
+		return out, nil
+	case []uint16:
+		out := make([]int, len(in.([]uint16)))
+		for i, v := range in.([]uint16) {
+			out[i] = int(v)
+		}
+		return out, nil
+	case []uint32:
+		out := make([]int, len(in.([]int8)))
+		for i, v := range in.([]int8) {
+			out[i] = int(v)
+		}
+		return out, nil
+	case []uint64:
+		out := make([]int, len(in.([]uint64)))
+		for i, v := range in.([]uint64) {
+			out[i] = int(v)
+		}
+		return out, nil
+
+	case []float32:
+		out := make([]int, len(in.([]float32)))
+		for i, v := range in.([]float32) {
+			out[i] = int(v)
+		}
+		return out, nil
+	case []float64:
+		out := make([]int, len(in.([]float64)))
+		for i, v := range in.([]float64) {
+			out[i] = int(v)
+		}
+		return out, nil
+
+	case []string:
+		out := make([]int, len(in.([]string)))
+		for i, v := range in.([]string) {
+			if p, err := strconv.Atoi(v); err != nil {
+				return nil, fmt.Errorf("offset %d(%q) cannot be parsed as int: %w", i, v, err)
+			} else {
+				out[i] = p
+			}
+		}
+		return out, nil
+
+	case []*big.Float:
+		out := make([]int, 0)
+		for _, v := range in.([]*big.Float) {
+			if v != nil {
+				vv, _ := v.Int64()
+				out = append(out, int(vv))
+			}
+		}
+		return out, nil
+	case []big.Float:
+		out := make([]int, len(in.([]big.Float)))
+		for i, v := range in.([]big.Float) {
+			vv, _ := v.Int64()
+			out[i] = int(vv)
+		}
+		return out, nil
+
+	default:
+		return nil, fmt.Errorf("unandled type to []int conversion: %T", in)
+	}
+}
+
 func TryCoerceToInt64(in interface{}) (int64, error) {
 	switch in.(type) {
 	case int:
@@ -86,6 +194,113 @@ func TryCoerceToInt64(in interface{}) (int64, error) {
 	}
 }
 
+func TryCoerceToInt64s(in interface{}) ([]int64, error) {
+	switch in.(type) {
+	case []int:
+		out := make([]int64, len(in.([]int)))
+		for i, v := range in.([]int) {
+			out[i] = int64(v)
+		}
+		return out, nil
+	case []int8:
+		out := make([]int64, len(in.([]int8)))
+		for i, v := range in.([]int8) {
+			out[i] = int64(v)
+		}
+		return out, nil
+	case []int16:
+		out := make([]int64, len(in.([]int16)))
+		for i, v := range in.([]int16) {
+			out[i] = int64(v)
+		}
+		return out, nil
+	case []int32:
+		out := make([]int64, len(in.([]int32)))
+		for i, v := range in.([]int32) {
+			out[i] = int64(v)
+		}
+		return out, nil
+	case []int64:
+		out := make([]int64, len(in.([]int64)))
+		copy(out, in.([]int64))
+		return out, nil
+
+	case []uint:
+		out := make([]int64, len(in.([]uint)))
+		for i, v := range in.([]uint) {
+			out[i] = int64(v)
+		}
+		return out, nil
+	case []uint8:
+		out := make([]int64, len(in.([]uint8)))
+		for i, v := range in.([]uint8) {
+			out[i] = int64(v)
+		}
+		return out, nil
+	case []uint16:
+		out := make([]int64, len(in.([]uint16)))
+		for i, v := range in.([]uint16) {
+			out[i] = int64(v)
+		}
+		return out, nil
+	case []uint32:
+		out := make([]int64, len(in.([]int8)))
+		for i, v := range in.([]int8) {
+			out[i] = int64(v)
+		}
+		return out, nil
+	case []uint64:
+		out := make([]int64, len(in.([]uint64)))
+		for i, v := range in.([]uint64) {
+			out[i] = int64(v)
+		}
+		return out, nil
+
+	case []float32:
+		out := make([]int64, len(in.([]float32)))
+		for i, v := range in.([]float32) {
+			out[i] = int64(v)
+		}
+		return out, nil
+	case []float64:
+		out := make([]int64, len(in.([]float64)))
+		for i, v := range in.([]float64) {
+			out[i] = int64(v)
+		}
+		return out, nil
+
+	case []string:
+		out := make([]int64, len(in.([]string)))
+		for i, v := range in.([]string) {
+			if p, err := strconv.ParseInt(v, 10, 64); err != nil {
+				return nil, fmt.Errorf("offset %d(%q) cannot be parsed as int64: %w", i, v, err)
+			} else {
+				out[i] = p
+			}
+		}
+		return out, nil
+
+	case []*big.Float:
+		out := make([]int64, 0)
+		for _, v := range in.([]*big.Float) {
+			if v != nil {
+				vv, _ := v.Int64()
+				out = append(out, vv)
+			}
+		}
+		return out, nil
+	case []big.Float:
+		out := make([]int64, len(in.([]big.Float)))
+		for i, v := range in.([]big.Float) {
+			out[i], _ = v.Int64()
+		}
+		return out, nil
+
+	default:
+		return nil, fmt.Errorf("unandled type to []int conversion: %T", in)
+	}
+}
+
 func TryCoerceToFloat64(in interface{}) (float64, error) {
 	switch in.(type) {
 	case int:
@@ -117,6 +332,114 @@ func TryCoerceToFloat64(in interface{}) (float64, error) {
 
 	default:
 		return 0, fmt.Errorf("unandled type to float64 conversion: %T", in)
+	}
+}
+
+func TryCoerceToFloats(in interface{}) ([]float64, error) {
+	switch in.(type) {
+	case []int:
+		out := make([]float64, len(in.([]int)))
+		for i, v := range in.([]int) {
+			out[i] = float64(v)
+		}
+		return out, nil
+	case []int8:
+		out := make([]float64, len(in.([]int8)))
+		for i, v := range in.([]int8) {
+			out[i] = float64(v)
+		}
+		return out, nil
+	case []int16:
+		out := make([]float64, len(in.([]int16)))
+		for i, v := range in.([]int16) {
+			out[i] = float64(v)
+		}
+		return out, nil
+	case []int32:
+		out := make([]float64, len(in.([]int32)))
+		for i, v := range in.([]int32) {
+			out[i] = float64(v)
+		}
+		return out, nil
+	case []int64:
+		out := make([]float64, len(in.([]int64)))
+		for i, v := range in.([]int64) {
+			out[i] = float64(v)
+		}
+		return out, nil
+
+	case []uint:
+		out := make([]float64, len(in.([]uint)))
+		for i, v := range in.([]uint) {
+			out[i] = float64(v)
+		}
+		return out, nil
+	case []uint8:
+		out := make([]float64, len(in.([]uint8)))
+		for i, v := range in.([]uint8) {
+			out[i] = float64(v)
+		}
+		return out, nil
+	case []uint16:
+		out := make([]float64, len(in.([]uint16)))
+		for i, v := range in.([]uint16) {
+			out[i] = float64(v)
+		}
+		return out, nil
+	case []uint32:
+		out := make([]float64, len(in.([]int8)))
+		for i, v := range in.([]int8) {
+			out[i] = float64(v)
+		}
+		return out, nil
+	case []uint64:
+		out := make([]float64, len(in.([]uint64)))
+		for i, v := range in.([]uint64) {
+			out[i] = float64(v)
+		}
+		return out, nil
+
+	case []string:
+		out := make([]float64, len(in.([]string)))
+		for i, v := range in.([]string) {
+			if p, err := strconv.ParseFloat(v, 64); err != nil {
+				return nil, fmt.Errorf("offset %d(%q) cannot be parsed as float64: %w", i, v, err)
+			} else {
+				out[i] = p
+			}
+		}
+		return out, nil
+
+	case []float32:
+		out := make([]float64, len(in.([]float32)))
+		for i, v := range in.([]float32) {
+			out[i] = float64(v)
+		}
+		return out, nil
+	case []float64:
+		out := make([]float64, len(in.([]float64)))
+		copy(out, in.([]float64))
+		return out, nil
+
+	case []*big.Float:
+		out := make([]float64, 0)
+		for _, v := range in.([]*big.Float) {
+			if v != nil {
+				vv, _ := v.Float64()
+				out = append(out, vv)
+			}
+		}
+		return out, nil
+	case []big.Float:
+		out := make([]float64, len(in.([]big.Float)))
+		for i, v := range in.([]big.Float) {
+			vv, _ := v.Float64()
+			out[i] = vv
+		}
+		return out, nil
+
+	default:
+		return nil, fmt.Errorf("unandled type to []int conversion: %T", in)
 	}
 }
 

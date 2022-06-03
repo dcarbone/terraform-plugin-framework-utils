@@ -353,6 +353,13 @@ func NumberValueToInt64(v attr.Value) (int64, big.Accuracy) {
 	return vt.Value.Int64()
 }
 
+// NumberValueToInt accepts either a types.Number or *types.Number, returning an int representation of the *big.Float
+// value within.  It will return [0, big.Exact] if the value was not set
+func NumberValueToInt(v attr.Value) (int, big.Accuracy) {
+	iv, acc := NumberValueToInt64(v)
+	return int(iv), acc
+}
+
 // NumberValueToFloat64 accepts either a types.Number or *types.Number, returning a float64 representation of the
 // *big.Float value within.  It will return [0.0, big.Exact] of the value was not set.
 func NumberValueToFloat64(v attr.Value) (float64, big.Accuracy) {
@@ -462,6 +469,30 @@ func Int64SetToInts(v attr.Value) []int {
 	out := make([]int, len(vt.Elems))
 	for i, ve := range vt.Elems {
 		out[i] = Int64ValueToInt(ve)
+	}
+	return out
+}
+
+// NumberListToInts accepts either an instance of types.List or *types.List where ElemType MUST be types.NumberType
+// returning a slice of ints of the value of each element
+func NumberListToInts(v attr.Value) []int {
+	vt := ValueToListType(v)
+	out := make([]int, len(vt.Elems))
+	for i, ve := range vt.Elems {
+		iv, _ := NumberValueToInt(ve)
+		out[i] = iv
+	}
+	return out
+}
+
+// NumberSetToInts accepts either an instance of types.Set or *types.Set where ElemType MUST be types.NumberType
+// returning a slice of ints of the value of each element
+func NumberSetToInts(v attr.Value) []int {
+	vt := ValueToSetType(v)
+	out := make([]int, len(vt.Elems))
+	for i, ve := range vt.Elems {
+		iv, _ := NumberValueToInt(ve)
+		out[i] = iv
 	}
 	return out
 }

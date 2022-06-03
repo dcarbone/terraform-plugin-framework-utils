@@ -233,9 +233,9 @@ func Length(minL, maxL int) AttributeValidator {
 }
 
 // CompareTest executes a registered comparison function against the target attribute's value
-func CompareTest(op CompareOp, target interface{}) TestFunc {
+func CompareTest(op CompareOp, target interface{}, meta ...interface{}) TestFunc {
 	return func(ctx context.Context, req tfsdk.ValidateAttributeRequest, resp *tfsdk.ValidateAttributeResponse) {
-		err := CompareAttrValues(req.AttributeConfig, op, target)
+		err := CompareAttrValues(req.AttributeConfig, op, target, meta...)
 		if err != nil {
 			switch true {
 			case errors.Is(err, ErrComparisonFailed):
@@ -261,11 +261,11 @@ func CompareTest(op CompareOp, target interface{}) TestFunc {
 // Compare executes the specified comparison to the target value for an attribute.
 //
 // Type comparisons
-func Compare(op CompareOp, target interface{}) AttributeValidator {
+func Compare(op CompareOp, target interface{}, meta ...interface{}) AttributeValidator {
 	v := NewValidator(
 		fmt.Sprintf("Asserts an attribute is %q to %T(%[2]v)", op, target),
 		fmt.Sprintf("Asserts an attribute is %q to %T(%[2]v)", op, target),
-		CompareTest(op, target),
+		CompareTest(op, target, meta...),
 		true,
 		true,
 	)

@@ -109,6 +109,13 @@ your own [ComparisonFunc](validation/comparison.go#44) using [SetComparisonFunc]
     Validators: []tfsdk.AttributeValidator{
         // equal
         validation.Compare(validation.Equal, 5),
+		// string comparisons are case sensitive by default
+		validation.Compare(validation.Equal, "five")
+		// passing true as the 3rd arg executes a case-insensitive comparison with strings
+		validation.Compare(validation.Equal, "fIve", true)
+		// you may also equate string slices
+		validation.Compare(validation.Equal, []string{"one", "two"})
+        validation.Compare(validation.Equal, []string{"oNe", "twO"}, true)
 
         // less than
         validation.Compare(validation.LessThan, 10),
@@ -123,7 +130,18 @@ your own [ComparisonFunc](validation/comparison.go#44) using [SetComparisonFunc]
         validation.Compare(validation.GreaterThanOrEqualTo, 5),
 
         // not equal
-        validation.Compare(validation.NotEqual, 10).
+        validation.Compare(validation.NotEqual, 10),
+		// string comparisons are case sensitive by default
+		validation.Compare(validation.NotEqual, "ten")
+		// passing true as the 3rd arg executes a case-insensitive comparison with strings
+		validation.Compare(validation.NotEqual, "tEn", true)
+		// you may also compare string slices
+		validation.Compare(validation.NotEqual, []string{"one", "two"})
+        validation.Compare(validation.NotEqual, []string{"oNe", "twO"}, true)
+		
+		// one of
+		// currently OneOf only works with strings
+		validation.Compare(validation.OneOf)
     }
 }
 ```

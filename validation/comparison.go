@@ -234,11 +234,21 @@ func compareBigFloat(av attr.Value, op CompareOp, target interface{}, _ ...inter
 	return ComparisonFailedError(act, op, exp)
 }
 
-func compareString(av attr.Value, op CompareOp, target interface{}, _ ...interface{}) error {
+func compareString(av attr.Value, op CompareOp, target interface{}, meta ...interface{}) error {
+	var caseInsensitive bool
+	if len(meta) > 0 {
+		if b, ok := meta[0].(bool); ok {
+			caseInsensitive = b
+		}
+	}
 	actStr := conv.StringValueToString(av)
 	tgtStr, ok := target.(string)
 	if !ok {
 		return UnexpectedComparisonTargetTypeError("compare_string", target, op, "", nil)
+	}
+	if caseInsensitive {
+		actStr = strings.ToLower(actStr)
+		tgtStr = strings.ToLower(tgtStr)
 	}
 	switch op {
 	case Equal:
@@ -257,10 +267,13 @@ func compareString(av attr.Value, op CompareOp, target interface{}, _ ...interfa
 	return ComparisonFailedError(actStr, op, tgtStr)
 }
 
-func compareStringsToString(av types.String, op CompareOp, targets []string, caseInsensitive bool) error {
+func compareStringToStrings(av types.String, op CompareOp, targets []string, caseInsensitive bool) error {
 	var actStr string
 	if caseInsensitive {
 		actStr = strings.ToLower(av.Value)
+		for i, v := range targets {
+			targets[i] = strings.ToLower(v)
+		}
 	} else {
 		actStr = av.Value
 	}
@@ -288,124 +301,217 @@ func compareStringsToString(av types.String, op CompareOp, targets []string, cas
 	return ComparisonFailedError(av.Value, op, targets)
 }
 
-func compareStringsToStrings(av attr.Value, op CompareOp, targets []string, caseInsensitive bool) error {
-	var (
-		actStrs    []string
-		actStrsLen int
-		tgtStrsLen int
-	)
-
-	tgtStrsLen = len(targets)
-
-	switch av.(type) {
-	case types.List, *types.List:
-		asList := conv.ValueToListType(av)
-		if asList.ElemType != types.StringType {
-			return UnexpectedComparisonActualTypeError("compare_strings", fmt.Sprintf("%T{ElemType: %T}", asList, asList.ElemType), op, fmt.Sprintf("%T{ElemType: %T}", types.ListType{}, types.StringType), nil)
+func compareStringsToStrings(actuals []string, op CompareOp, targets []string, caseInsensitive bool) error {
+	if caseInsensitive {
+		for i, v := range targets {
+			targets[i] = strings.ToLower(v)
 		}
-
-		actStrs = conv.StringListToStrings(av)
-		actStrsLen = len(actStrs)
-		if caseInsensitive {
-			for i, v := range actStrs {
-				actStrs[i] = strings.ToLower(v)
-			}
+		for i, v := range actuals {
+			actuals[i] = strings.ToLower(v)
 		}
-
-	case types.Set, *types.Set:
-		asSet := conv.ValueToSetType(av)
-		if asSet.ElemType != types.StringType {
-			return UnexpectedComparisonActualTypeError("compare_strings", fmt.Sprintf("%T{ElemType: %T}", asSet, asSet.ElemType), op, fmt.Sprintf("%T{ElemType: %T}", types.SetType{}, types.StringType), nil)
-		}
-
-		actStrs = conv.StringSetToStrings(av)
-		actStrsLen = len(actStrs)
-		if caseInsensitive {
-			for i, v := range actStrs {
-				actStrs[i] = strings.ToLower(v)
-			}
-		}
-
-	default:
-		return UnexpectedComparisonActualTypeError("compare_strings", av, op, strings.Join(
-			[]string{
-				fmt.Sprintf("%T", ""),
-				fmt.Sprintf("%T{ElemType: %T}", types.ListType{}, types.StringType),
-				fmt.Sprintf("%T{ElemType: %T}", types.SetType{}, types.StringType),
-			},
-			","), nil)
 	}
 
-	actStrsLen = len(actStrs)
+	actualsLen := len(actuals)
+	targetsLen := len(targets)
 
 	switch op {
 	case Equal:
-		if actStrsLen == tgtStrsLen {
-			for i, v := range actStrs {
+		if actualsLen == targetsLen {
+			for i, v := range actuals {
 				if targets[i] != v {
-					return ComparisonFailedError(actStrs[i], op, targets[i])
+					return ComparisonFailedError(actuals[i], op, targets[i])
 				}
 			}
 			return nil
 		}
 
 	case NotEqual:
-		if actStrsLen != tgtStrsLen {
+		if actualsLen != targetsLen {
 			return nil
 		}
 
-		for i, v := range actStrs {
+		for i, v := range actuals {
 			if targets[i] != v {
 				return nil
 			}
 		}
 	default:
-		return NoComparisonFuncRegisteredError(op, av)
+		return NoComparisonFuncRegisteredError(op, make([]string, 0))
 	}
 
-	return ComparisonFailedError(actStrs, op, targets)
+	return ComparisonFailedError(actuals, op, targets)
+}
+
+func compareListToStrings(av types.List, op CompareOp, targets []string, caseInsensitive bool) error {
+	if av.ElemType != types.StringType {
+		return UnexpectedComparisonActualTypeError("compare_strings", av.ElemType, op, types.StringType, nil)
+	}
+	return compareStringsToStrings(conv.StringListToStrings(av), op, targets, caseInsensitive)
+}
+
+func compareSetToStrings(av types.Set, op CompareOp, targets []string, caseInsensitive bool) error {
+	if av.ElemType != types.StringType {
+		return UnexpectedComparisonActualTypeError("compare_strings", av.ElemType, op, types.StringType, nil)
+	}
+	return compareStringsToStrings(conv.StringSetToStrings(av), op, targets, caseInsensitive)
 }
 
 func compareStrings(av attr.Value, op CompareOp, target interface{}, meta ...interface{}) error {
-	var (
-		tgtStrs         []string
-		caseInsensitive bool
-	)
-
+	caseInsensitive := false
 	if len(meta) > 0 {
 		if b, ok := meta[0].(bool); ok {
 			caseInsensitive = b
 		}
 	}
 
-	if targ, ok := target.([]string); !ok {
+	tgtStrs, ok := target.([]string)
+	if !ok {
 		return UnexpectedComparisonTargetTypeError("compare_strings", target, op, make([]string, 0), nil)
-	} else {
-		tgtStrs = make([]string, len(targ))
-		if caseInsensitive {
-			for i, v := range targ {
-				tgtStrs[i] = strings.ToLower(v)
-			}
-		} else {
-			copy(tgtStrs, targ)
-		}
 	}
 
 	switch av.(type) {
 	case types.String, *types.String:
-		return compareStringsToString(conv.ValueToStringType(av), op, tgtStrs, caseInsensitive)
+		return compareStringToStrings(conv.ValueToStringType(av), op, tgtStrs, caseInsensitive)
 
-	case types.List, *types.List, types.Set, *types.Set:
-		return compareStringsToStrings(av, op, tgtStrs, caseInsensitive)
+	case types.List, *types.List:
+		return compareListToStrings(conv.ValueToListType(av), op, tgtStrs, caseInsensitive)
+	case types.Set, *types.Set:
+		return compareSetToStrings(conv.ValueToSetType(av), op, tgtStrs, caseInsensitive)
 
 	default:
-		return UnexpectedComparisonActualTypeError("compare_strings", av, op, strings.Join(
-			[]string{
-				fmt.Sprintf("%T", ""),
-				fmt.Sprintf("%T{ElemType: %T}", types.ListType{}, types.StringType),
-				fmt.Sprintf("%T{ElemType: %T}", types.SetType{}, types.StringType),
-			},
-			","), nil)
+		return UnexpectedComparisonActualTypeError("compare_strings", av, op, types.StringType, nil)
+	}
+}
+
+func compareInt64ToInts(av types.Int64, op CompareOp, targets []int, _ ...interface{}) error {
+	asInt := int(av.Value)
+	switch op {
+	case OneOf:
+		for _, v := range targets {
+			if asInt == v {
+				return nil
+			}
+		}
+
+	case NotOneOf:
+		for _, v := range targets {
+			if asInt == v {
+				return ComparisonFailedError(targets, op, asInt)
+			}
+		}
+		return nil
+
+	default:
+		return NoComparisonFuncRegisteredError(op, targets)
+	}
+
+	return ComparisonFailedError(av.Value, op, targets)
+}
+
+func compareNumberToInts(av types.Number, op CompareOp, targets []int, _ ...interface{}) error {
+	if av.Value == nil {
+		return ComparisonFailedError(nil, op, targets)
+	}
+	asInt64, _ := av.Value.Int64()
+	asInt := int(asInt64)
+	switch op {
+	case OneOf:
+		for _, v := range targets {
+			if asInt == v {
+				return nil
+			}
+		}
+
+	case NotOneOf:
+		for _, v := range targets {
+			if asInt == v {
+				return ComparisonFailedError(targets, op, asInt)
+			}
+		}
+		return nil
+
+	default:
+		return NoComparisonFuncRegisteredError(op, targets)
+	}
+
+	return ComparisonFailedError(av.Value, op, targets)
+}
+
+func compareIntsToInts(actuals []int, op CompareOp, targets []int) error {
+	actualsLen := len(actuals)
+	targetsLen := len(targets)
+
+	switch op {
+	case Equal:
+		if actualsLen == targetsLen {
+			for i, v := range actuals {
+				if targets[i] != v {
+					return ComparisonFailedError(actuals[i], op, targets[i])
+				}
+			}
+			return nil
+		}
+
+	case NotEqual:
+		if actualsLen != targetsLen {
+			return nil
+		}
+
+		for i, v := range actuals {
+			if targets[i] != v {
+				return nil
+			}
+		}
+	default:
+		return NoComparisonFuncRegisteredError(op, make([]int, 0))
+	}
+
+	return ComparisonFailedError(actuals, op, targets)
+}
+
+func compareListToInts(av types.List, op CompareOp, targets []int, _ ...interface{}) error {
+	switch av.ElemType {
+	case types.Int64Type:
+		return compareIntsToInts(conv.Int64ListToInts(av), op, targets)
+	case types.NumberType:
+		return compareIntsToInts(conv.NumberListToInts(av), op, targets)
+
+	default:
+		return UnexpectedComparisonActualTypeError("compare_ints", av.ElemType, op, types.Int64Type, nil)
+	}
+}
+
+func compareSetToInts(av types.Set, op CompareOp, targets []int, _ ...interface{}) error {
+	switch av.ElemType {
+	case types.Int64Type:
+		return compareIntsToInts(conv.Int64SetToInts(av), op, targets)
+	case types.NumberType:
+		return compareIntsToInts(conv.NumberSetToInts(av), op, targets)
+
+	default:
+		return UnexpectedComparisonActualTypeError("compare_ints", av.ElemType, op, types.Int64Type, nil)
+	}
+}
+
+func compareInts(av attr.Value, op CompareOp, target interface{}, _ ...interface{}) error {
+	tgtInts, ok := target.([]int)
+	if !ok {
+		return UnexpectedComparisonTargetTypeError("compare_ints", target, op, make([]int, 0), nil)
+	}
+
+	switch av.(type) {
+	case types.Int64, *types.Int64:
+		return compareInt64ToInts(conv.ValueToInt64Type(av), op, tgtInts)
+	case types.Number, *types.Number:
+		return compareNumberToInts(conv.ValueToNumberType(av), op, tgtInts)
+
+	case types.List, *types.List:
+		return compareListToInts(conv.ValueToListType(av), op, tgtInts)
+	case types.Set, *types.Set:
+		return compareSetToInts(conv.ValueToSetType(av), op, tgtInts)
+
+	default:
+		return UnexpectedComparisonActualTypeError("compare_ints", av, op, types.Int64{}, nil)
 	}
 }
 
@@ -419,6 +525,7 @@ func DefaultComparisonFuncs() map[string]ComparisonFunc {
 		util.KeyFN((*big.Float)(nil)): compareBigFloat,
 		util.KeyFN(""):                compareString,
 		util.KeyFN(make([]string, 0)): compareStrings,
+		util.KeyFN(make([]int, 0)):    compareInts,
 	}
 }
 

@@ -45,26 +45,26 @@ func (ct comparisonTest) do(t *testing.T) {
 func TestComparison_Bool(t *testing.T) {
 	theTests := []comparisonTest{
 		{
-			name: "bool_eq_ok",
+			name: "eq_ok",
 			op:   validation.Equal,
 			tgt:  true,
 			act:  types.Bool{Value: true},
 		},
 		{
-			name:        "bool_eq_nok",
+			name:        "eq_nok",
 			op:          validation.Equal,
 			tgt:         true,
 			act:         types.Bool{Value: false},
 			expectError: true,
 		},
 		{
-			name: "bool_neq_ok",
+			name: "neq_ok",
 			op:   validation.NotEqual,
 			tgt:  true,
 			act:  types.Bool{Value: false},
 		},
 		{
-			name:        "bool_neq_nok",
+			name:        "neq_nok",
 			op:          validation.NotEqual,
 			tgt:         true,
 			act:         types.Bool{Value: true},
@@ -82,104 +82,104 @@ func TestComparison_Bool(t *testing.T) {
 func TestComparison_Float(t *testing.T) {
 	theTests := []comparisonTest{
 		{
-			name: "float_eq_ok",
+			name: "eq_ok",
 			op:   validation.Equal,
 			tgt:  float64(0.1),
 			act:  types.Float64{Value: 0.1},
 		},
 		{
-			name:        "float_eq_nok",
+			name:        "eq_nok",
 			op:          validation.Equal,
 			tgt:         float64(1.0),
 			act:         types.Float64{Value: 0.1},
 			expectError: true,
 		},
 		{
-			name: "float_neq_ok",
+			name: "neq_ok",
 			op:   validation.NotEqual,
 			tgt:  1.0,
 			act:  types.Float64{Value: 0.1},
 		},
 		{
-			name:        "float_neq_nok",
+			name:        "neq_nok",
 			op:          validation.NotEqual,
 			tgt:         float64(1.0),
 			act:         types.Float64{Value: 1.0},
 			expectError: true,
 		},
 		{
-			name: "float_lt_ok",
+			name: "lt_ok",
 			op:   validation.LessThan,
 			tgt:  float64(1.0),
 			act:  types.Float64{Value: 0.9},
 		},
 		{
-			name:        "float_lt_nok",
+			name:        "lt_nok",
 			op:          validation.LessThan,
 			tgt:         float64(1.0),
 			act:         types.Float64{Value: 1.0},
 			expectError: true,
 		},
 		{
-			name: "float_lte_lt_ok",
+			name: "lte_lt_ok",
 			op:   validation.LessThanOrEqualTo,
 			tgt:  float64(1.0),
 			act:  types.Float64{Value: 0.9},
 		},
 		{
-			name:        "float_lte_lt_nok",
+			name:        "lte_lt_nok",
 			op:          validation.LessThanOrEqualTo,
 			tgt:         float64(1.0),
 			act:         types.Float64{Value: 1.1},
 			expectError: true,
 		},
 		{
-			name: "float_lte_eq_ok",
+			name: "lte_eq_ok",
 			op:   validation.LessThanOrEqualTo,
 			tgt:  float64(1.0),
 			act:  types.Float64{Value: 1.0},
 		},
 		{
-			name:        "float_lte_eq_nok",
+			name:        "lte_eq_nok",
 			op:          validation.LessThanOrEqualTo,
 			tgt:         float64(1.0),
 			act:         types.Float64{Value: 1.1},
 			expectError: true,
 		},
 		{
-			name: "float_gt_ok",
+			name: "gt_ok",
 			op:   validation.GreaterThan,
 			tgt:  float64(1.0),
 			act:  types.Float64{Value: 1.1},
 		},
 		{
-			name:        "float_gt_nok",
+			name:        "gt_nok",
 			op:          validation.GreaterThan,
 			tgt:         float64(1.0),
 			act:         types.Float64{Value: 1.0},
 			expectError: true,
 		},
 		{
-			name: "float_gte_gt_ok",
+			name: "gte_gt_ok",
 			op:   validation.GreaterThanOrEqualTo,
 			tgt:  float64(1.0),
 			act:  types.Float64{Value: 1.1},
 		},
 		{
-			name:        "float_gte_gt_nok",
+			name:        "gte_gt_nok",
 			op:          validation.GreaterThanOrEqualTo,
 			tgt:         float64(1.0),
 			act:         types.Float64{Value: 0.9},
 			expectError: true,
 		},
 		{
-			name: "float_gte_eq_ok",
+			name: "gte_eq_ok",
 			op:   validation.GreaterThanOrEqualTo,
 			tgt:  float64(1.0),
 			act:  types.Float64{Value: 1.0},
 		},
 		{
-			name:        "float_gte_eq_nok",
+			name:        "gte_eq_nok",
 			op:          validation.GreaterThanOrEqualTo,
 			tgt:         float64(1.0),
 			act:         types.Float64{Value: 0.9},
@@ -197,104 +197,104 @@ func TestComparison_Float(t *testing.T) {
 func TestComparison_Int(t *testing.T) {
 	theTests := []comparisonTest{
 		{
-			name: "int_eq_ok",
+			name: "eq_ok",
 			op:   validation.Equal,
 			tgt:  1,
 			act:  types.Int64{Value: 1},
 		},
 		{
-			name:        "int_eq_nok",
+			name:        "eq_nok",
 			op:          validation.Equal,
 			tgt:         1,
 			act:         types.Int64{Value: 0},
 			expectError: true,
 		},
 		{
-			name: "int_neq_ok",
+			name: "neq_ok",
 			op:   validation.NotEqual,
 			tgt:  1,
 			act:  types.Int64{Value: 0},
 		},
 		{
-			name:        "int_neq_nok",
+			name:        "neq_nok",
 			op:          validation.NotEqual,
 			tgt:         1,
 			act:         types.Int64{Value: 1},
 			expectError: true,
 		},
 		{
-			name: "int_lt_ok",
+			name: "lt_ok",
 			op:   validation.LessThan,
 			tgt:  1,
 			act:  types.Int64{Value: 0},
 		},
 		{
-			name:        "int_lt_nok",
+			name:        "lt_nok",
 			op:          validation.LessThan,
 			tgt:         1,
 			act:         types.Int64{Value: 1},
 			expectError: true,
 		},
 		{
-			name: "int_lte_lt_ok",
+			name: "lte_lt_ok",
 			op:   validation.LessThanOrEqualTo,
 			tgt:  1,
 			act:  types.Int64{Value: 0},
 		},
 		{
-			name:        "int_lte_lt_nok",
+			name:        "lte_lt_nok",
 			op:          validation.LessThanOrEqualTo,
 			tgt:         1,
 			act:         types.Int64{Value: 2},
 			expectError: true,
 		},
 		{
-			name: "int_lte_eq_ok",
+			name: "lte_eq_ok",
 			op:   validation.LessThanOrEqualTo,
 			tgt:  1,
 			act:  types.Int64{Value: 1},
 		},
 		{
-			name:        "int_lte_eq_nok",
+			name:        "lte_eq_nok",
 			op:          validation.LessThanOrEqualTo,
 			tgt:         1,
 			act:         types.Int64{Value: 2},
 			expectError: true,
 		},
 		{
-			name: "int_gt_ok",
+			name: "gt_ok",
 			op:   validation.GreaterThan,
 			tgt:  1,
 			act:  types.Int64{Value: 2},
 		},
 		{
-			name:        "int_gt_nok",
+			name:        "gt_nok",
 			op:          validation.GreaterThan,
 			tgt:         1,
 			act:         types.Int64{Value: 1},
 			expectError: true,
 		},
 		{
-			name: "int_gte_gt_ok",
+			name: "gte_gt_ok",
 			op:   validation.GreaterThanOrEqualTo,
 			tgt:  1,
 			act:  types.Int64{Value: 2},
 		},
 		{
-			name:        "int_gte_gt_nok",
+			name:        "gte_gt_nok",
 			op:          validation.GreaterThanOrEqualTo,
 			tgt:         1,
 			act:         types.Int64{Value: 0},
 			expectError: true,
 		},
 		{
-			name: "int_gte_eq_ok",
+			name: "gte_eq_ok",
 			op:   validation.GreaterThanOrEqualTo,
 			tgt:  1,
 			act:  types.Int64{Value: 1},
 		},
 		{
-			name:        "int_gte_eq_nok",
+			name:        "gte_eq_nok",
 			op:          validation.GreaterThanOrEqualTo,
 			tgt:         1,
 			act:         types.Int64{Value: 0},
@@ -312,104 +312,104 @@ func TestComparison_Int(t *testing.T) {
 func TestComparison_BigFloat(t *testing.T) {
 	theTests := []comparisonTest{
 		{
-			name: "bigfloat_eq_ok",
+			name: "eq_ok",
 			op:   validation.Equal,
 			tgt:  big.NewFloat(0.1),
 			act:  types.Number{Value: big.NewFloat(0.1)},
 		},
 		{
-			name:        "bigfloat_eq_nok",
+			name:        "eq_nok",
 			op:          validation.Equal,
 			tgt:         big.NewFloat(1.0),
 			act:         types.Number{Value: big.NewFloat(0.1)},
 			expectError: true,
 		},
 		{
-			name: "bigfloat_neq_ok",
+			name: "neq_ok",
 			op:   validation.NotEqual,
 			tgt:  1.0,
 			act:  types.Number{Value: big.NewFloat(0.1)},
 		},
 		{
-			name:        "bigfloat_neq_nok",
+			name:        "neq_nok",
 			op:          validation.NotEqual,
 			tgt:         big.NewFloat(1.0),
 			act:         types.Number{Value: big.NewFloat(1.0)},
 			expectError: true,
 		},
 		{
-			name: "bigfloat_lt_ok",
+			name: "lt_ok",
 			op:   validation.LessThan,
 			tgt:  big.NewFloat(1.0),
 			act:  types.Number{Value: big.NewFloat(0.9)},
 		},
 		{
-			name:        "bigfloat_lt_nok",
+			name:        "lt_nok",
 			op:          validation.LessThan,
 			tgt:         big.NewFloat(1.0),
 			act:         types.Number{Value: big.NewFloat(1.0)},
 			expectError: true,
 		},
 		{
-			name: "bigfloat_lte_lt_ok",
+			name: "lte_lt_ok",
 			op:   validation.LessThanOrEqualTo,
 			tgt:  big.NewFloat(1.0),
 			act:  types.Number{Value: big.NewFloat(0.9)},
 		},
 		{
-			name:        "bigfloat_lte_lt_nok",
+			name:        "lte_lt_nok",
 			op:          validation.LessThanOrEqualTo,
 			tgt:         big.NewFloat(1.0),
 			act:         types.Number{Value: big.NewFloat(1.1)},
 			expectError: true,
 		},
 		{
-			name: "bigfloat_lte_eq_ok",
+			name: "lte_eq_ok",
 			op:   validation.LessThanOrEqualTo,
 			tgt:  big.NewFloat(1.0),
 			act:  types.Number{Value: big.NewFloat(1.0)},
 		},
 		{
-			name:        "bigfloat_lte_eq_nok",
+			name:        "lte_eq_nok",
 			op:          validation.LessThanOrEqualTo,
 			tgt:         big.NewFloat(1.0),
 			act:         types.Number{Value: big.NewFloat(1.1)},
 			expectError: true,
 		},
 		{
-			name: "bigfloat_gt_ok",
+			name: "gt_ok",
 			op:   validation.GreaterThan,
 			tgt:  big.NewFloat(1.0),
 			act:  types.Number{Value: big.NewFloat(1.1)},
 		},
 		{
-			name:        "bigfloat_gt_nok",
+			name:        "gt_nok",
 			op:          validation.GreaterThan,
 			tgt:         big.NewFloat(1.0),
 			act:         types.Number{Value: big.NewFloat(1.0)},
 			expectError: true,
 		},
 		{
-			name: "bigfloat_gte_gt_ok",
+			name: "gte_gt_ok",
 			op:   validation.GreaterThanOrEqualTo,
 			tgt:  big.NewFloat(1.0),
 			act:  types.Number{Value: big.NewFloat(1.1)},
 		},
 		{
-			name:        "bigfloat_gte_gt_nok",
+			name:        "gte_gt_nok",
 			op:          validation.GreaterThanOrEqualTo,
 			tgt:         big.NewFloat(1.0),
 			act:         types.Number{Value: big.NewFloat(0.9)},
 			expectError: true,
 		},
 		{
-			name: "bigfloat_gte_eq_ok",
+			name: "gte_eq_ok",
 			op:   validation.GreaterThanOrEqualTo,
 			tgt:  big.NewFloat(1.0),
 			act:  types.Number{Value: big.NewFloat(1.0)},
 		},
 		{
-			name:        "bigfloat_gte_eq_nok",
+			name:        "gte_eq_nok",
 			op:          validation.GreaterThanOrEqualTo,
 			tgt:         big.NewFloat(1.0),
 			act:         types.Number{Value: big.NewFloat(0.9)},
@@ -427,26 +427,26 @@ func TestComparison_BigFloat(t *testing.T) {
 func TestComparison_String(t *testing.T) {
 	theTests := []comparisonTest{
 		{
-			name: "string_eq_ok",
+			name: "eq_ok",
 			op:   validation.Equal,
 			act:  types.String{Value: "hi"},
 			tgt:  "hi",
 		},
 		{
-			name:        "string_eq_nok",
+			name:        "eq_nok",
 			op:          validation.Equal,
 			act:         types.String{Value: "hi"},
 			tgt:         "ih",
 			expectError: true,
 		},
 		{
-			name: "string_neq_ok",
+			name: "neq_ok",
 			op:   validation.NotEqual,
 			act:  types.String{Value: "hi"},
 			tgt:  "ih",
 		},
 		{
-			name:        "string_neq_nok",
+			name:        "neq_nok",
 			op:          validation.NotEqual,
 			act:         types.String{Value: "hi"},
 			tgt:         "hi",
@@ -477,27 +477,27 @@ func TestComparison_Strings(t *testing.T) {
 	theTests := []comparisonTest{
 		// list []string sensitive eq
 		{
-			name: "strings_list_eq_sensitive_ok",
+			name: "list_eq_sensitive_ok",
 			op:   validation.Equal,
 			act:  types.List{ElemType: types.StringType, Elems: []attr.Value{types.String{Value: one}, types.String{Value: two}}},
 			tgt:  targetOneTwo,
 		},
 		{
-			name:        "strings_list_eq_sensitive_nok_casing",
+			name:        "list_eq_sensitive_nok_casing",
 			op:          validation.Equal,
 			act:         types.List{ElemType: types.StringType, Elems: []attr.Value{types.String{Value: oNe}, types.String{Value: twO}}},
 			tgt:         targetOneTwo,
 			expectError: true,
 		},
 		{
-			name:        "strings_list_eq_sensitive_nok_order",
+			name:        "list_eq_sensitive_nok_order",
 			op:          validation.Equal,
 			act:         types.List{ElemType: types.StringType, Elems: []attr.Value{types.String{Value: two}, types.String{Value: one}}},
 			tgt:         targetOneTwo,
 			expectError: true,
 		},
 		{
-			name:        "strings_list_eq_sensitive_nok_len",
+			name:        "list_eq_sensitive_nok_len",
 			op:          validation.Equal,
 			act:         types.List{ElemType: types.StringType, Elems: []attr.Value{types.String{Value: one}, types.String{Value: two}, types.String{Value: three}}},
 			tgt:         targetOneTwo,
@@ -506,21 +506,21 @@ func TestComparison_Strings(t *testing.T) {
 
 		// list []string insensitive eq
 		{
-			name: "strings_list_eq_insensitive_ok",
+			name: "list_eq_insensitive_ok",
 			op:   validation.Equal,
 			act:  types.List{ElemType: types.StringType, Elems: []attr.Value{types.String{Value: one}, types.String{Value: two}}},
 			tgt:  targetOneTwo,
 			meta: []interface{}{true},
 		},
 		{
-			name: "strings_list_eq_insensitive_ok_casing",
+			name: "list_eq_insensitive_ok_casing",
 			op:   validation.Equal,
 			act:  types.List{ElemType: types.StringType, Elems: []attr.Value{types.String{Value: oNe}, types.String{Value: twO}}},
 			tgt:  targetOneTwo,
 			meta: []interface{}{true},
 		},
 		{
-			name:        "strings_list_eq_insensitive_nok_order",
+			name:        "list_eq_insensitive_nok_order",
 			op:          validation.Equal,
 			act:         types.List{ElemType: types.StringType, Elems: []attr.Value{types.String{Value: two}, types.String{Value: one}}},
 			tgt:         targetOneTwo,
@@ -528,7 +528,7 @@ func TestComparison_Strings(t *testing.T) {
 			meta:        []interface{}{true},
 		},
 		{
-			name:        "strings_list_eq_insensitive_nok_len",
+			name:        "list_eq_insensitive_nok_len",
 			op:          validation.Equal,
 			act:         types.List{ElemType: types.StringType, Elems: []attr.Value{types.String{Value: one}, types.String{Value: two}, types.String{Value: three}}},
 			tgt:         targetOneTwo,
@@ -538,25 +538,25 @@ func TestComparison_Strings(t *testing.T) {
 
 		// list []string sensitive neq
 		{
-			name: "strings_list_neq_sensitive_ok_order",
+			name: "list_neq_sensitive_ok_order",
 			op:   validation.NotEqual,
 			act:  types.List{ElemType: types.StringType, Elems: []attr.Value{types.String{Value: two}, types.String{Value: one}}},
 			tgt:  targetOneTwo,
 		},
 		{
-			name: "strings_list_neq_sensitive_ok_casing",
+			name: "list_neq_sensitive_ok_casing",
 			op:   validation.NotEqual,
 			act:  types.List{ElemType: types.StringType, Elems: []attr.Value{types.String{Value: oNe}, types.String{Value: twO}}},
 			tgt:  targetOneTwo,
 		},
 		{
-			name: "strings_list_neq_sensitive_ok_len",
+			name: "list_neq_sensitive_ok_len",
 			op:   validation.NotEqual,
 			act:  types.List{ElemType: types.StringType, Elems: []attr.Value{types.String{Value: one}, types.String{Value: two}, types.String{Value: three}}},
 			tgt:  targetOneTwo,
 		},
 		{
-			name:        "strings_list_neq_sensitive_nok",
+			name:        "list_neq_sensitive_nok",
 			op:          validation.NotEqual,
 			act:         types.List{ElemType: types.StringType, Elems: []attr.Value{types.String{Value: one}, types.String{Value: two}}},
 			tgt:         targetOneTwo,
@@ -565,21 +565,21 @@ func TestComparison_Strings(t *testing.T) {
 
 		// list []string insensitive neq
 		{
-			name: "strings_list_neq_insensitive_ok_order",
+			name: "list_neq_insensitive_ok_order",
 			op:   validation.NotEqual,
 			act:  types.List{ElemType: types.StringType, Elems: []attr.Value{types.String{Value: two}, types.String{Value: one}}},
 			tgt:  targetOneTwo,
 			meta: []interface{}{true},
 		},
 		{
-			name: "strings_list_neq_insensitive_ok_len",
+			name: "list_neq_insensitive_ok_len",
 			op:   validation.NotEqual,
 			act:  types.List{ElemType: types.StringType, Elems: []attr.Value{types.String{Value: one}, types.String{Value: two}, types.String{Value: three}}},
 			tgt:  targetOneTwo,
 			meta: []interface{}{true},
 		},
 		{
-			name:        "strings_list_neq_insensitive_nok_same",
+			name:        "list_neq_insensitive_nok_same",
 			op:          validation.NotEqual,
 			act:         types.List{ElemType: types.StringType, Elems: []attr.Value{types.String{Value: one}, types.String{Value: two}}},
 			tgt:         targetOneTwo,
@@ -587,7 +587,7 @@ func TestComparison_Strings(t *testing.T) {
 			expectError: true,
 		},
 		{
-			name:        "strings_list_neq_insensitive_nok_casing",
+			name:        "list_neq_insensitive_nok_casing",
 			op:          validation.NotEqual,
 			act:         types.List{ElemType: types.StringType, Elems: []attr.Value{types.String{Value: oNe}, types.String{Value: twO}}},
 			tgt:         targetOneTwo,
@@ -597,26 +597,26 @@ func TestComparison_Strings(t *testing.T) {
 
 		// string sensitive oneof
 		{
-			name: "strings_oneof_sensitive_ok_first",
+			name: "oneof_sensitive_ok_first",
 			op:   validation.OneOf,
 			act:  types.String{Value: one},
 			tgt:  targetOneTwo,
 		},
 		{
-			name: "strings_oneof_sensitive_ok_last",
+			name: "oneof_sensitive_ok_last",
 			op:   validation.OneOf,
 			act:  types.String{Value: two},
 			tgt:  targetOneTwo,
 		},
 		{
-			name:        "strings_oneof_sensitive_nok_extra",
+			name:        "oneof_sensitive_nok_extra",
 			op:          validation.OneOf,
 			act:         types.String{Value: three},
 			tgt:         targetOneTwo,
 			expectError: true,
 		},
 		{
-			name:        "strings_oneof_sensitive_nok_casing",
+			name:        "oneof_sensitive_nok_casing",
 			op:          validation.OneOf,
 			act:         types.String{Value: oNe},
 			tgt:         targetOneTwo,
@@ -625,35 +625,35 @@ func TestComparison_Strings(t *testing.T) {
 
 		// string insensitive oneof
 		{
-			name: "strings_oneof_insensitive_ok_first",
+			name: "oneof_insensitive_ok_first",
 			op:   validation.OneOf,
 			act:  types.String{Value: one},
 			tgt:  targetOneTwo,
 			meta: []interface{}{true},
 		},
 		{
-			name: "strings_oneof_insensitive_ok_first_casing",
+			name: "oneof_insensitive_ok_first_casing",
 			op:   validation.OneOf,
 			act:  types.String{Value: oNe},
 			tgt:  targetOneTwo,
 			meta: []interface{}{true},
 		},
 		{
-			name: "strings_oneof_insensitive_ok_last",
+			name: "oneof_insensitive_ok_last",
 			op:   validation.OneOf,
 			act:  types.String{Value: two},
 			tgt:  targetOneTwo,
 			meta: []interface{}{true},
 		},
 		{
-			name: "strings_oneof_insensitive_ok_last_casing",
+			name: "oneof_insensitive_ok_last_casing",
 			op:   validation.OneOf,
 			act:  types.String{Value: twO},
 			tgt:  targetOneTwo,
 			meta: []interface{}{true},
 		},
 		{
-			name:        "strings_oneof_insensitive_nok",
+			name:        "oneof_insensitive_nok",
 			op:          validation.OneOf,
 			act:         types.String{Value: three},
 			tgt:         targetOneTwo,
@@ -663,26 +663,26 @@ func TestComparison_Strings(t *testing.T) {
 
 		// string sensitive notoneof
 		{
-			name: "strings_notoneof_sensitive_ok_extra",
+			name: "notoneof_sensitive_ok_extra",
 			op:   validation.NotOneOf,
 			act:  types.String{Value: three},
 			tgt:  targetOneTwo,
 		},
 		{
-			name: "strings_notoneof_sensitive_ok_casing",
+			name: "notoneof_sensitive_ok_casing",
 			op:   validation.NotOneOf,
 			act:  types.String{Value: oNe},
 			tgt:  targetOneTwo,
 		},
 		{
-			name:        "strings_notoneof_sensitive_nok_first",
+			name:        "notoneof_sensitive_nok_first",
 			op:          validation.NotOneOf,
 			act:         types.String{Value: one},
 			tgt:         targetOneTwo,
 			expectError: true,
 		},
 		{
-			name:        "strings_notoneof_sensitive_nok_last",
+			name:        "notoneof_sensitive_nok_last",
 			op:          validation.NotOneOf,
 			act:         types.String{Value: two},
 			tgt:         targetOneTwo,
@@ -691,14 +691,14 @@ func TestComparison_Strings(t *testing.T) {
 
 		// string insensitive notoneof
 		{
-			name: "strings_notoneof_insensitive_ok",
+			name: "notoneof_insensitive_ok",
 			op:   validation.NotOneOf,
 			act:  types.String{Value: three},
 			tgt:  targetOneTwo,
 			meta: []interface{}{true},
 		},
 		{
-			name:        "strings_notoneof_insensitive_nok_first",
+			name:        "notoneof_insensitive_nok_first",
 			op:          validation.NotOneOf,
 			act:         types.String{Value: one},
 			tgt:         targetOneTwo,
@@ -706,7 +706,7 @@ func TestComparison_Strings(t *testing.T) {
 			meta:        []interface{}{true},
 		},
 		{
-			name:        "strings_notoneof_insensitive_nok_first_casing",
+			name:        "notoneof_insensitive_nok_first_casing",
 			op:          validation.NotOneOf,
 			act:         types.String{Value: oNe},
 			tgt:         targetOneTwo,
@@ -714,7 +714,7 @@ func TestComparison_Strings(t *testing.T) {
 			meta:        []interface{}{true},
 		},
 		{
-			name:        "strings_notoneof_insensitive_nok_last",
+			name:        "notoneof_insensitive_nok_last",
 			op:          validation.NotOneOf,
 			act:         types.String{Value: two},
 			tgt:         targetOneTwo,
@@ -722,12 +722,280 @@ func TestComparison_Strings(t *testing.T) {
 			meta:        []interface{}{true},
 		},
 		{
-			name:        "strings_notoneof_insensitive_nok_last_casing",
+			name:        "notoneof_insensitive_nok_last_casing",
 			op:          validation.NotOneOf,
 			act:         types.String{Value: twO},
 			tgt:         targetOneTwo,
 			expectError: true,
 			meta:        []interface{}{true},
+		},
+	}
+
+	for _, ct := range theTests {
+		t.Run(ct.name, func(t *testing.T) {
+			ct.do(t)
+		})
+	}
+}
+
+func TestComparison_Ints(t *testing.T) {
+	var (
+		attrInt1 = types.Int64{Value: 1}
+		attrInt2 = types.Int64{Value: 2}
+		attrInt3 = types.Int64{Value: 3}
+
+		attrNum1 = types.Number{Value: big.NewFloat(float64(1))}
+		attrNum2 = types.Number{Value: big.NewFloat(float64(2))}
+		attrNum3 = types.Number{Value: big.NewFloat(float64(3))}
+
+		targetOneTwo = []int{1, 2}
+	)
+
+	theTests := []comparisonTest{
+		// list int64
+		{
+			name: "list_int64_eq_ok",
+			op:   validation.Equal,
+			act:  types.List{ElemType: types.Int64Type, Elems: []attr.Value{attrInt1, attrInt2}},
+			tgt:  targetOneTwo,
+		},
+		{
+			name:        "list_int64_eq_nok_order",
+			op:          validation.Equal,
+			act:         types.List{ElemType: types.Int64Type, Elems: []attr.Value{attrInt2, attrInt1}},
+			tgt:         targetOneTwo,
+			expectError: true,
+		},
+		{
+			name:        "list_int64_eq_nok_extra",
+			op:          validation.Equal,
+			act:         types.List{ElemType: types.Int64Type, Elems: []attr.Value{attrInt1, attrInt2, attrInt3}},
+			tgt:         targetOneTwo,
+			expectError: true,
+		},
+		{
+			name: "list_int64_neq_ok_order",
+			op:   validation.NotEqual,
+			act:  types.List{ElemType: types.Int64Type, Elems: []attr.Value{attrInt2, attrInt1}},
+			tgt:  targetOneTwo,
+		},
+		{
+			name: "list_int64_eq_ok_extra",
+			op:   validation.NotEqual,
+			act:  types.List{ElemType: types.Int64Type, Elems: []attr.Value{attrInt1, attrInt2, attrInt3}},
+			tgt:  targetOneTwo,
+		},
+		{
+			name:        "list_int64_neq_nok",
+			op:          validation.NotEqual,
+			act:         types.List{ElemType: types.Int64Type, Elems: []attr.Value{attrInt1, attrInt2}},
+			tgt:         targetOneTwo,
+			expectError: true,
+		},
+
+		// list number
+		{
+			name: "list_number_eq_ok",
+			op:   validation.Equal,
+			act:  types.List{ElemType: types.NumberType, Elems: []attr.Value{attrNum1, attrNum2}},
+			tgt:  targetOneTwo,
+		},
+		{
+			name:        "list_number_eq_nok_order",
+			op:          validation.Equal,
+			act:         types.List{ElemType: types.NumberType, Elems: []attr.Value{attrNum2, attrNum1}},
+			tgt:         targetOneTwo,
+			expectError: true,
+		},
+		{
+			name:        "list_number_eq_nok_extra",
+			op:          validation.Equal,
+			act:         types.List{ElemType: types.NumberType, Elems: []attr.Value{attrNum1, attrNum2, attrNum3}},
+			tgt:         targetOneTwo,
+			expectError: true,
+		},
+		{
+			name: "list_number_neq_ok_order",
+			op:   validation.NotEqual,
+			act:  types.List{ElemType: types.NumberType, Elems: []attr.Value{attrNum2, attrNum1}},
+			tgt:  targetOneTwo,
+		},
+		{
+			name: "list_number_neq_ok_extra",
+			op:   validation.NotEqual,
+			act:  types.List{ElemType: types.NumberType, Elems: []attr.Value{attrNum1, attrNum2, attrNum3}},
+			tgt:  targetOneTwo,
+		},
+		{
+			name:        "list_number_neq_nok",
+			op:          validation.NotEqual,
+			act:         types.List{ElemType: types.NumberType, Elems: []attr.Value{attrNum1, attrNum2}},
+			tgt:         targetOneTwo,
+			expectError: true,
+		},
+
+		// set int64
+		{
+			name: "set_int64_eq_ok",
+			op:   validation.Equal,
+			act:  types.Set{ElemType: types.Int64Type, Elems: []attr.Value{attrInt1, attrInt2}},
+			tgt:  targetOneTwo,
+		},
+		{
+			name:        "set_int64_eq_nok_order",
+			op:          validation.Equal,
+			act:         types.Set{ElemType: types.Int64Type, Elems: []attr.Value{attrInt2, attrInt1}},
+			tgt:         targetOneTwo,
+			expectError: true,
+		},
+		{
+			name:        "set_int64_eq_nok_extra",
+			op:          validation.Equal,
+			act:         types.Set{ElemType: types.Int64Type, Elems: []attr.Value{attrInt1, attrInt2, attrInt3}},
+			tgt:         targetOneTwo,
+			expectError: true,
+		},
+		{
+			name: "set_int64_neq_ok_order",
+			op:   validation.NotEqual,
+			act:  types.Set{ElemType: types.Int64Type, Elems: []attr.Value{attrInt2, attrInt1}},
+			tgt:  targetOneTwo,
+		},
+		{
+			name: "set_int64_eq_ok_extra",
+			op:   validation.NotEqual,
+			act:  types.Set{ElemType: types.Int64Type, Elems: []attr.Value{attrInt1, attrInt2, attrInt3}},
+			tgt:  targetOneTwo,
+		},
+		{
+			name:        "set_int64_neq_nok",
+			op:          validation.NotEqual,
+			act:         types.Set{ElemType: types.Int64Type, Elems: []attr.Value{attrInt1, attrInt2}},
+			tgt:         targetOneTwo,
+			expectError: true,
+		},
+
+		// set number
+		{
+			name: "set_number_eq_ok",
+			op:   validation.Equal,
+			act:  types.Set{ElemType: types.NumberType, Elems: []attr.Value{attrNum1, attrNum2}},
+			tgt:  targetOneTwo,
+		},
+		{
+			name:        "set_number_eq_nok_order",
+			op:          validation.Equal,
+			act:         types.Set{ElemType: types.NumberType, Elems: []attr.Value{attrNum2, attrNum1}},
+			tgt:         targetOneTwo,
+			expectError: true,
+		},
+		{
+			name:        "set_number_eq_nok_extra",
+			op:          validation.Equal,
+			act:         types.Set{ElemType: types.NumberType, Elems: []attr.Value{attrNum1, attrNum2, attrNum3}},
+			tgt:         targetOneTwo,
+			expectError: true,
+		},
+		{
+			name: "set_number_neq_ok_order",
+			op:   validation.NotEqual,
+			act:  types.Set{ElemType: types.NumberType, Elems: []attr.Value{attrNum2, attrNum1}},
+			tgt:  targetOneTwo,
+		},
+		{
+			name: "set_number_neq_ok_extra",
+			op:   validation.NotEqual,
+			act:  types.Set{ElemType: types.NumberType, Elems: []attr.Value{attrNum1, attrNum2, attrNum3}},
+			tgt:  targetOneTwo,
+		},
+		{
+			name:        "set_number_neq_nok",
+			op:          validation.NotEqual,
+			act:         types.Set{ElemType: types.NumberType, Elems: []attr.Value{attrNum1, attrNum2}},
+			tgt:         targetOneTwo,
+			expectError: true,
+		},
+
+		// int64
+		{
+			name: "int64_oneof_ok_first",
+			op:   validation.OneOf,
+			act:  attrInt1,
+			tgt:  targetOneTwo,
+		},
+		{
+			name: "int64_oneof_ok_last",
+			op:   validation.OneOf,
+			act:  attrInt2,
+			tgt:  targetOneTwo,
+		},
+		{
+			name:        "int64_oneof_nok",
+			op:          validation.OneOf,
+			act:         attrInt3,
+			tgt:         targetOneTwo,
+			expectError: true,
+		},
+		{
+			name: "int64_notoneof_ok",
+			op:   validation.NotOneOf,
+			act:  attrInt3,
+			tgt:  targetOneTwo,
+		},
+		{
+			name:        "int64_notoneof_nok_first",
+			op:          validation.NotOneOf,
+			act:         attrInt1,
+			tgt:         targetOneTwo,
+			expectError: true,
+		},
+		{
+			name:        "int64_notoneof_nok_last",
+			op:          validation.NotOneOf,
+			act:         attrInt2,
+			tgt:         targetOneTwo,
+			expectError: true,
+		},
+
+		// number
+		{
+			name: "number_oneof_ok_first",
+			op:   validation.OneOf,
+			act:  attrNum1,
+			tgt:  targetOneTwo,
+		},
+		{
+			name: "number_oneof_ok_last",
+			op:   validation.OneOf,
+			act:  attrNum2,
+			tgt:  targetOneTwo,
+		},
+		{
+			name:        "number_oneof_nok",
+			op:          validation.OneOf,
+			act:         attrNum3,
+			tgt:         targetOneTwo,
+			expectError: true,
+		},
+		{
+			name: "number_notoneof_ok",
+			op:   validation.NotOneOf,
+			act:  attrNum3,
+			tgt:  targetOneTwo,
+		},
+		{
+			name:        "number_notoneof_nok_first",
+			op:          validation.NotOneOf,
+			act:         attrNum1,
+			tgt:         targetOneTwo,
+			expectError: true,
+		},
+		{
+			name:        "number_notoneof_nok_last",
+			op:          validation.NotOneOf,
+			act:         attrNum2,
+			tgt:         targetOneTwo,
+			expectError: true,
 		},
 	}
 
