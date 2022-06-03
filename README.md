@@ -116,6 +116,8 @@ your own [ComparisonFunc](validation/comparison.go#44) using [SetComparisonFunc]
 		// you may also equate string slices
 		validation.Compare(validation.Equal, []string{"one", "two"})
         validation.Compare(validation.Equal, []string{"oNe", "twO"}, true)
+		// you can also assert that a list of ints is equivalent
+		validation.Compare(validation.Equal, []int{1, 2})
 
         // less than
         validation.Compare(validation.LessThan, 10),
@@ -138,10 +140,22 @@ your own [ComparisonFunc](validation/comparison.go#44) using [SetComparisonFunc]
 		// you may also compare string slices
 		validation.Compare(validation.NotEqual, []string{"one", "two"})
         validation.Compare(validation.NotEqual, []string{"oNe", "twO"}, true)
+		// you can also assert that a list of ints is not equivalent
+        validation.Compare(validation.NotEqual, []int{1, 2})
+
+        // one of
+		// currently OneOf only works with strings and ints
+		validation.Compare(validation.OneOf, []string{"one", "two"})
+		// you can provide true for the 3rd parameter to perform a case-insensitive comparison
+		validation.Compare(validation.OneOf, []string{"one", "two"}, true)
+		validation.Compare(validation.OneOf []int{1, 2})
 		
-		// one of
-		// currently OneOf only works with strings
-		validation.Compare(validation.OneOf)
+		// not one of
+		// currently NotOneOf only works with strings and ints
+		validation.Compare(validation.NotOneOf, []string{"one", "two"})
+		// you can provide true for the 3rd parameter to perform a case-insensitive comparison
+		validation.Compare(validation.NotOneOf, []string{"one", "two"}, true)
+		validation.Compare(validation.NotOneOf []int{1, 2})
     }
 }
 ```
