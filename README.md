@@ -9,10 +9,18 @@ changes as possible but, as always, community help is appreciated!
 
 # Index
 
+* [Version Matrix](#version-matrix)
 * [Installation](#installation)
 * [Type Conversion](#type-conversion)
 * [Attribute Validation](#attribute-validation)
 * [Test Utilities](#test-utilities)
+
+# Version Matrix
+
+| Terraform Plugin Framework | Framework Utils |
+|----------------------------|-----------------|
+| v0.7.0-v0.9.0              | v1              |
+| v0.10.x                    | v2              |
 
 # Installation
 ```shell

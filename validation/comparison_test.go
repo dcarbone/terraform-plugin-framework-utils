@@ -4,7 +4,7 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/dcarbone/terraform-plugin-framework-utils/validation"
+	"github.com/dcarbone/terraform-plugin-framework-utils/v2/validation"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )

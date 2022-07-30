@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/dcarbone/terraform-plugin-framework-utils/internal/util"
+	"github.com/dcarbone/terraform-plugin-framework-utils/v2/internal/util"
 )
 
 type ConfigLiteral string
