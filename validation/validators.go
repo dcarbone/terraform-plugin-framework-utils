@@ -11,20 +11,16 @@ import (
 	"strings"
 	"time"
 
-	"github.com/dcarbone/terraform-plugin-framework-utils/conv"
+	"github.com/dcarbone/terraform-plugin-framework-utils/v2/conv"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-type AttributeValidator interface {
-	tfsdk.AttributeValidator
-	WithDescription(string) AttributeValidator
-	WithMarkdownDescription(string) AttributeValidator
-}
+type AttributeValidator tfsdk.AttributeValidator
 
 type TestFunc func(context.Context, tfsdk.ValidateAttributeRequest, *tfsdk.ValidateAttributeResponse)
 
-type baseAttributeValidator struct {
+type attributeValidator struct {
 	desc        string
 	mdDesc      string
 	skipNull    bool
@@ -32,27 +28,40 @@ type baseAttributeValidator struct {
 	fn          TestFunc
 }
 
-func NewValidator(desc, md string, fn TestFunc, skipNull, skipUnknown bool) *baseAttributeValidator {
-	v := new(baseAttributeValidator)
-	v.desc = desc
-	v.mdDesc = md
-	v.skipNull = skipNull
-	v.skipUnknown = skipUnknown
-	v.fn = fn
+// AttributeValidatorConfig describes the configuration of a custom AttributeValidator
+type AttributeValidatorConfig struct {
+	Description         string
+	MarkdownDescription string
+	TestFunc            TestFunc
+	SkipWhenNull        bool
+	SkipWhenUnknown     bool
+}
+
+// NewValidator returns a type implementing the validator interface with your specific construction
+func NewValidator(conf AttributeValidatorConfig) AttributeValidator {
+	if conf.TestFunc == nil {
+		panic("test function cannot be nil")
+	}
+	v := new(attributeValidator)
+	v.desc = conf.Description
+	v.mdDesc = conf.MarkdownDescription
+	v.fn = conf.TestFunc
+	v.skipNull = conf.SkipWhenNull
+	v.skipUnknown = conf.SkipWhenUnknown
 	return v
 }
 
-func (v *baseAttributeValidator) Description(context.Context) string {
+func (v *attributeValidator) Description(context.Context) string {
 	return v.desc
 }
 
-func (v *baseAttributeValidator) MarkdownDescription(context.Context) string {
+func (v *attributeValidator) MarkdownDescription(context.Context) string {
 	return v.mdDesc
 }
 
 // Validate determines whether a given attribute's value was "valued" in the configuration being processed.  It will
 // only allow validation to continue if there is a value to perform validation on.
-func (v *baseAttributeValidator) Validate(ctx context.Context, req tfsdk.ValidateAttributeRequest, resp *tfsdk.ValidateAttributeResponse) {
+func (v *attributeValidator) Validate(ctx context.Context, req tfsdk.ValidateAttributeRequest, resp *tfsdk.ValidateAttributeResponse) {
 	err := conv.TestAttributeValueState(req.AttributeConfig)
 
 	if v.skipUnknown && conv.IsValueIsUnknownError(err) {
@@ -65,16 +74,6 @@ func (v *baseAttributeValidator) Validate(ctx context.Context, req tfsdk.Validat
 
 	// otherwise, fire away!
 	v.fn(ctx, req, resp)
-}
-
-func (v *baseAttributeValidator) WithDescription(desc string) AttributeValidator {
-	v.desc = desc
-	return v
-}
-
-func (v *baseAttributeValidator) WithMarkdownDescription(mdDesc string) AttributeValidator {
-	v.mdDesc = mdDesc
-	return v
 }
 
 // RequiredTest is an AttributeValidator implementation that will register an error if the attribute has no value of
@@ -93,16 +92,17 @@ func RequiredTest() TestFunc {
 	}
 }
 
+var requiredValidator = NewValidator(AttributeValidatorConfig{
+	Description:         "Asserts the attribute is defined and non-null",
+	MarkdownDescription: "Asserts the attribute is defined and non-null",
+	TestFunc:            RequiredTest(),
+	SkipWhenNull:        false,
+	SkipWhenUnknown:     true,
+})
+
 // Required returns a validator that asserts a field is configured with any value at all.
 func Required() AttributeValidator {
-	v := NewValidator(
-		"Asserts the attribute is defined and non-null",
-		"Asserts the attribute is defined and non-null",
-		RequiredTest(),
-		false,
-		true,
-	)
-	return v
+	return requiredValidator
 }
 
 // RegexpMatchTest is an AttributeValidator implementation that will first attempt to convert the value of
@@ -123,13 +123,13 @@ func RegexpMatchTest(r string) TestFunc {
 
 // RegexpMatch returns a validator that asserts an attribute's value matches the provided expression
 func RegexpMatch(r string) AttributeValidator {
-	v := NewValidator(
-		fmt.Sprintf("Asserts attribute string value matches expression %q", r),
-		fmt.Sprintf("Asserts attribute string value matches expression %q", r),
-		RegexpMatchTest(r),
-		true,
-		true,
-	)
+	v := NewValidator(AttributeValidatorConfig{
+		Description:         fmt.Sprintf("Asserts attribute string value matches expression %q", r),
+		MarkdownDescription: fmt.Sprintf("Asserts attribute string value matches expression %q", r),
+		TestFunc:            RegexpMatchTest(r),
+		SkipWhenNull:        true,
+		SkipWhenUnknown:     true,
+	})
 	return v
 }
 
@@ -151,13 +151,13 @@ func RegexpNotMatchTest(r string) TestFunc {
 
 // RegexpNotMatch returns a validator that asserts an attribute's value does not match the provided expression
 func RegexpNotMatch(r string) AttributeValidator {
-	v := NewValidator(
-		fmt.Sprintf("Assert attribute string value does not match expression %q", r),
-		fmt.Sprintf("Assert attribute string value does not match expression %q", r),
-		RegexpNotMatchTest(r),
-		true,
-		true,
-	)
+	v := NewValidator(AttributeValidatorConfig{
+		Description:         fmt.Sprintf("Assert attribute string value does not match expression %q", r),
+		MarkdownDescription: fmt.Sprintf("Assert attribute string value does not match expression %q", r),
+		TestFunc:            RegexpNotMatchTest(r),
+		SkipWhenNull:        true,
+		SkipWhenUnknown:     true,
+	})
 	return v
 }
 
@@ -222,13 +222,13 @@ func LengthTest(minL, maxL int) TestFunc {
 //		- map
 //		- list
 func Length(minL, maxL int) AttributeValidator {
-	v := NewValidator(
-		fmt.Sprintf("Asserts an attribute's value contains no less than %d and no more than %d elements, with -1 meaning unbounded", minL, maxL),
-		fmt.Sprintf("Asserts an attribute's value contains no less than %d and no more than %d elements, with -1 meaning unbounded", minL, maxL),
-		LengthTest(minL, maxL),
-		true,
-		true,
-	)
+	v := NewValidator(AttributeValidatorConfig{
+		Description:         fmt.Sprintf("Asserts an attribute's value contains no less than %d and no more than %d elements, with -1 meaning unbounded", minL, maxL),
+		MarkdownDescription: fmt.Sprintf("Asserts an attribute's value contains no less than %d and no more than %d elements, with -1 meaning unbounded", minL, maxL),
+		TestFunc:            LengthTest(minL, maxL),
+		SkipWhenNull:        true,
+		SkipWhenUnknown:     true,
+	})
 	return v
 }
 
@@ -262,13 +262,13 @@ func CompareTest(op CompareOp, target interface{}, meta ...interface{}) TestFunc
 //
 // Type comparisons
 func Compare(op CompareOp, target interface{}, meta ...interface{}) AttributeValidator {
-	v := NewValidator(
-		fmt.Sprintf("Asserts an attribute is %q to %T(%[2]v)", op, target),
-		fmt.Sprintf("Asserts an attribute is %q to %T(%[2]v)", op, target),
-		CompareTest(op, target, meta...),
-		true,
-		true,
-	)
+	v := NewValidator(AttributeValidatorConfig{
+		Description:         fmt.Sprintf("Asserts an attribute is %q to %T(%[2]v)", op, target),
+		MarkdownDescription: fmt.Sprintf("Asserts an attribute is %q to %T(%[2]v)", op, target),
+		TestFunc:            CompareTest(op, target, meta...),
+		SkipWhenNull:        true,
+		SkipWhenUnknown:     true,
+	})
 	return v
 }
 
@@ -285,17 +285,17 @@ func TestIsURL() TestFunc {
 	}
 }
 
+var isURLValidator = NewValidator(AttributeValidatorConfig{
+	Description:         "Tests if provided value is parseable as url.URL",
+	MarkdownDescription: "Tests if provided value is parseable as url.URL",
+	TestFunc:            TestIsURL(),
+	SkipWhenNull:        true,
+	SkipWhenUnknown:     true,
+})
+
 // IsURL returns a validator that asserts a given attribute value is parseable as a URL
 func IsURL() AttributeValidator {
-	v := NewValidator(
-		"Tests if provided value is parseable as url.URL",
-		"Tests if provided value is parseable as url.URL",
-		TestIsURL(),
-		true,
-		true,
-	)
-
-	return v
+	return isURLValidator
 }
 
 // TestIsDurationString asserts that a given attribute's value is a valid time.Duration string
@@ -311,17 +311,17 @@ func TestIsDurationString() TestFunc {
 	}
 }
 
+var isDurationStringValidator = NewValidator(AttributeValidatorConfig{
+	Description:         "Tests if value is a valid time.Duration string",
+	MarkdownDescription: "Tests if value is a valid time.Duration string",
+	TestFunc:            TestIsDurationString(),
+	SkipWhenNull:        true,
+	SkipWhenUnknown:     true,
+})
+
 // IsDurationString returns a validator that asserts a given attribute's value is a valid time.Duration string
 func IsDurationString() AttributeValidator {
-	v := NewValidator(
-		"Tests if value is a valid time.Duration string",
-		"Tests if value is a valid time.Duration string",
-		TestIsDurationString(),
-		true,
-		true,
-	)
-
-	return v
+	return isDurationStringValidator
 }
 
 // TestEnvVarValued asserts that a given attribute value is the name of an environment variable that is valued
@@ -339,18 +339,18 @@ func TestEnvVarValued() TestFunc {
 	}
 }
 
+var envVarValuedValidator = NewValidator(AttributeValidatorConfig{
+	Description:         "Tests if value is an environment variable name that itself is valued",
+	MarkdownDescription: "Tests if value is an environment variable name that itself is valued",
+	TestFunc:            TestEnvVarValued(),
+	SkipWhenNull:        true,
+	SkipWhenUnknown:     true,
+})
+
 // EnvVarValued returns a validator that asserts a given attribute's value is the name of an environment variable that
 // is valued at runtime
 func EnvVarValued() AttributeValidator {
-	v := NewValidator(
-		"Tests if value is an environment variable name that itself is valued",
-		"Tests if value is an environment variable name that itself is valued",
-		TestEnvVarValued(),
-		true,
-		true,
-	)
-
-	return v
+	return envVarValuedValidator
 }
 
 // TestFileIsReadable attempts to open and subsequently read a single byte from the file at the path specified by the
@@ -389,17 +389,17 @@ func TestFileIsReadable() TestFunc {
 	}
 }
 
+var fileIsReadableValidator = NewValidator(AttributeValidatorConfig{
+	Description:         "Tests if value is a file that exists and is readable",
+	MarkdownDescription: "Tests if value is a file that exists and is readable",
+	TestFunc:            TestFileIsReadable(),
+	SkipWhenNull:        true,
+	SkipWhenUnknown:     true,
+})
+
 // FileIsReadable returns a validator that asserts a given attribute's value is a local file that is readable.
 func FileIsReadable() AttributeValidator {
-	v := NewValidator(
-		"Tests if value is a file that exists and is readable",
-		"Tests if value is a file that exists and is readable",
-		TestFileIsReadable(),
-		true,
-		true,
-	)
-
-	return v
+	return fileIsReadableValidator
 }
 
 // MutuallyExclusiveSiblingTest ensures that a given attribute is not valued when another one is, and vice versa.
@@ -411,7 +411,7 @@ func MutuallyExclusiveSiblingTest(siblingAttr string) TestFunc {
 		}
 
 		siblingAttrValue := types.String{}
-		siblingAttrPath := req.AttributePath.WithoutLastStep().WithAttributeName(siblingAttr)
+		siblingAttrPath := req.AttributePath.ParentPath().AtName(siblingAttr)
 
 		// try to fetch value of sibling attribute
 		diags := req.Config.GetAttribute(ctx, siblingAttrPath, &siblingAttrValue)
@@ -429,8 +429,8 @@ func MutuallyExclusiveSiblingTest(siblingAttr string) TestFunc {
 			"Mutually exclusive value error",
 			fmt.Sprintf(
 				"Cannot provide value to both %q and %q",
-				conv.FormatAttributePathSteps(req.AttributePath.Steps()...),
-				conv.FormatAttributePathSteps(siblingAttrPath.Steps()...),
+				conv.FormatPathPathSteps(req.AttributePath.Steps()...),
+				conv.FormatPathPathSteps(siblingAttrPath.Steps()...),
 			),
 		)
 	}
@@ -441,13 +441,13 @@ func MutuallyExclusiveSiblingTest(siblingAttr string) TestFunc {
 //
 // Sibling is defined as another attribute that is at the same step depth as the source attribute
 func MutuallyExclusiveSibling(siblingAttr string) AttributeValidator {
-	v := NewValidator(
-		fmt.Sprintf("Ensures attribute is only valued if sibling attribute %q is empty", siblingAttr),
-		fmt.Sprintf("Ensures attribute is only valued if sibling attribute %q is empty", siblingAttr),
-		MutuallyExclusiveSiblingTest(siblingAttr),
-		true,
-		true,
-	)
+	v := NewValidator(AttributeValidatorConfig{
+		Description:         fmt.Sprintf("Ensures attribute is only valued if sibling attribute %q is empty", siblingAttr),
+		MarkdownDescription: fmt.Sprintf("Ensures attribute is only valued if sibling attribute %q is empty", siblingAttr),
+		TestFunc:            MutuallyExclusiveSiblingTest(siblingAttr),
+		SkipWhenNull:        true,
+		SkipWhenUnknown:     true,
+	})
 
 	return v
 }
@@ -461,7 +461,7 @@ func MutuallyInclusiveSiblingTest(siblingAttr string) TestFunc {
 		}
 
 		siblingAttrValue := types.String{}
-		siblingAttrPath := req.AttributePath.WithoutLastStep().WithAttributeName(siblingAttr)
+		siblingAttrPath := req.AttributePath.ParentPath().AtName(siblingAttr)
 
 		// try to fetch value of sibling attribute
 		diags := req.Config.GetAttribute(ctx, siblingAttrPath, &siblingAttrValue)
@@ -479,21 +479,21 @@ func MutuallyInclusiveSiblingTest(siblingAttr string) TestFunc {
 			"Mutually inclusive value error",
 			fmt.Sprintf(
 				"Attribute %q is required when sibling attribute %q is valued",
-				conv.FormatAttributePathSteps(req.AttributePath.Steps()...),
-				conv.FormatAttributePathSteps(siblingAttrPath.Steps()...),
+				conv.FormatPathPathSteps(req.AttributePath.Steps()...),
+				conv.FormatPathPathSteps(siblingAttrPath.Steps()...),
 			),
 		)
 	}
 }
 
 func MutuallyInclusiveSibling(siblingAttr string) AttributeValidator {
-	v := NewValidator(
-		fmt.Sprintf("Ensure attribute is valued when sibling attribute %q is also valued", siblingAttr),
-		fmt.Sprintf("Ensure attribute is valued when sibling attribute %q is also valued", siblingAttr),
-		MutuallyInclusiveSiblingTest(siblingAttr),
-		false,
-		false,
-	)
+	v := NewValidator(AttributeValidatorConfig{
+		Description:         fmt.Sprintf("Ensure attribute is valued when sibling attribute %q is also valued", siblingAttr),
+		MarkdownDescription: fmt.Sprintf("Ensure attribute is valued when sibling attribute %q is also valued", siblingAttr),
+		TestFunc:            MutuallyInclusiveSiblingTest(siblingAttr),
+		SkipWhenNull:        false,
+		SkipWhenUnknown:     false,
+	})
 
 	return v
 }

@@ -2,15 +2,15 @@ package validation
 
 import (
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	"math/big"
 	"strings"
 	"sync"
 
-	"github.com/dcarbone/terraform-plugin-framework-utils/conv"
-	"github.com/dcarbone/terraform-plugin-framework-utils/internal/util"
+	"github.com/dcarbone/terraform-plugin-framework-utils/v2/conv"
+	"github.com/dcarbone/terraform-plugin-framework-utils/v2/internal/util"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 type CompareOp string

@@ -4,8 +4,18 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 )
+
+// FormatPathPathSteps takes one or more path steps and joins them together with "."
+func FormatPathPathSteps(pathSteps ...path.PathStep) string {
+	bits := make([]string, 0)
+	for _, pathStep := range pathSteps {
+		bits = append(bits, pathStep.String())
+	}
+	return strings.Join(bits, ".")
+}
 
 // FormatAttributePathSteps takes one or more path steps and joins them together with "."
 func FormatAttributePathSteps(pathSteps ...tftypes.AttributePathStep) string {
