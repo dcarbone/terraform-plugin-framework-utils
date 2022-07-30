@@ -24,7 +24,7 @@ changes as possible but, as always, community help is appreciated!
 
 # Installation
 ```shell
-go get -u github.com/dcarbone/terraform-plugin-framework-utils@latest
+go get -u github.com/dcarbone/terraform-plugin-framework-utils/v2@latest
 ```
 
 # Type Conversion
