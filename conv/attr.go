@@ -17,6 +17,18 @@ func FormatPathPathSteps(pathSteps ...path.PathStep) string {
 	return strings.Join(bits, ".")
 }
 
+// FormatPathPaths takes one or more path.Path types and returns a pretty-printable string.
+func FormatPathPaths(paths ...path.Path) string {
+	out := "["
+	for i, o := range paths {
+		if i > 0 {
+			out = fmt.Sprintf("%s, ", out)
+		}
+		out = fmt.Sprintf("%s%q", out, FormatPathPathSteps(o.Steps()...))
+	}
+	return fmt.Sprintf("%s]", out)
+}
+
 // FormatAttributePathSteps takes one or more path steps and joins them together with "."
 func FormatAttributePathSteps(pathSteps ...tftypes.AttributePathStep) string {
 	bits := make([]string, 0)
