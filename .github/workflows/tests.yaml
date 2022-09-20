@@ -18,15 +18,21 @@ jobs:
   tests:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-go@v3
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install Go
+        uses: actions/setup-go@v3
         with:
           go-version-file: go.mod
 
-      - run: go mod tidy && go mod vendor
+      - name: Vendor
+        run: |
+          go mod tidy
+          go mod vendor
 
-      - working-directory: acctest
-        run: go test -v
+      - name: Go vet
+        run: go vet ./...
 
-      - working-directory: validation
-        run: go test -v
+      - name: Go test
+        run: go test ./...
