@@ -3,7 +3,7 @@ module github.com/dcarbone/terraform-plugin-framework-utils/v2
 go 1.18
 
 require (
-	github.com/hashicorp/terraform-plugin-framework v0.14.0
+	github.com/hashicorp/terraform-plugin-framework v0.15.0
 	github.com/hashicorp/terraform-plugin-go v0.14.0
 )
 
