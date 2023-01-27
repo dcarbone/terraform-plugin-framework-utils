@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/dcarbone/terraform-plugin-framework-utils/v2/conv"
+	"github.com/dcarbone/terraform-plugin-framework-utils/v3/conv"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -217,10 +217,10 @@ func LengthTest(minL, maxL int) TestFunc {
 }
 
 // Length asserts an attribute's length is limited to the specified bounds.  The allowed types are:
-//		- string
-//		- set
-//		- map
-//		- list
+//   - string
+//   - set
+//   - map
+//   - list
 func Length(minL, maxL int) AttributeValidator {
 	v := NewValidator(AttributeValidatorConfig{
 		Description:         fmt.Sprintf("Asserts an attribute's value contains no less than %d and no more than %d elements, with -1 meaning unbounded", minL, maxL),

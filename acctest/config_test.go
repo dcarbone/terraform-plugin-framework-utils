@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/dcarbone/terraform-plugin-framework-utils/v2/acctest"
+	"github.com/dcarbone/terraform-plugin-framework-utils/v3/acctest"
 )
 
 func TestConfigValue_Defaults(t *testing.T) {

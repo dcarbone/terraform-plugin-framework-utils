@@ -21,10 +21,11 @@ changes as possible but, as always, community help is appreciated!
 |----------------------------|-----------------|
 | v0.7.0-v0.9.0              | v1              |
 | v0.10.x-v0.15.x            | v2              |
+| v1.x                       | v3              |
 
 # Installation
 ```shell
-go get -u github.com/dcarbone/terraform-plugin-framework-utils/v2@latest
+go get -u github.com/dcarbone/terraform-plugin-framework-utils/v3@latest
 ```
 
 # Type Conversion

@@ -1,10 +1,11 @@
 package validation_test
 
 import (
+	"context"
 	"math/big"
 	"testing"
 
-	"github.com/dcarbone/terraform-plugin-framework-utils/v2/validation"
+	"github.com/dcarbone/terraform-plugin-framework-utils/v3/validation"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -30,7 +31,7 @@ func (ct comparisonTest) do(t *testing.T) {
 			}
 		}()
 	}
-	err := validation.CompareAttrValues(ct.act, ct.op, ct.tgt, ct.meta...)
+	err := validation.CompareAttrValues(context.Background(), ct.act, ct.op, ct.tgt, ct.meta...)
 	if err != nil {
 		t.Logf("comparison error seen: %v", err)
 		if !ct.expectError {
