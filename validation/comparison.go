@@ -570,12 +570,12 @@ func CompareAttrValues(ctx context.Context, av attr.Value, op CompareOp, target 
 
 func addComparisonFailedDiagnostic(op CompareOp, target interface{}, srcReq interface{}, srcResp interface{}, err error) {
 	var (
-		req  GenericValidatorRequest
-		resp *GenericValidatorResponse
+		req  GenericRequest
+		resp *GenericResponse
 		terr error
 	)
 
-	if req, resp, terr = toGenericValidatorTypes(srcReq, srcResp); terr != nil {
+	if req, resp, terr = toGenericTypes(srcReq, srcResp); terr != nil {
 		panic(terr.Error())
 	}
 
