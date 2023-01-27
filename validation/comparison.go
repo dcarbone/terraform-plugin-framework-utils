@@ -343,15 +343,15 @@ func compareStringsToStrings(actuals []string, op CompareOp, targets []string, c
 }
 
 func compareListToStrings(ctx context.Context, av types.List, op CompareOp, targets []string, caseInsensitive bool) error {
-	if av.Type(ctx) != types.StringType {
-		return UnexpectedComparisonActualTypeError("compare_strings", av.ElementType(ctx), op, types.StringType, nil)
+	if av.ElementType(ctx) != types.StringType {
+		return UnexpectedComparisonActualTypeError("compare_list_strings", av.ElementType(ctx), op, types.StringType, nil)
 	}
 	return compareStringsToStrings(conv.StringListToStrings(av), op, targets, caseInsensitive)
 }
 
 func compareSetToStrings(ctx context.Context, av types.Set, op CompareOp, targets []string, caseInsensitive bool) error {
-	if av.Type(ctx) != types.StringType {
-		return UnexpectedComparisonActualTypeError("compare_strings", av.ElementType(ctx), op, types.StringType, nil)
+	if av.ElementType(ctx) != types.StringType {
+		return UnexpectedComparisonActualTypeError("compare_set_strings", av.ElementType(ctx), op, types.StringType, nil)
 	}
 	return compareStringsToStrings(conv.StringSetToStrings(av), op, targets, caseInsensitive)
 }
@@ -383,7 +383,7 @@ func compareStrings(ctx context.Context, av attr.Value, op CompareOp, target int
 	}
 }
 
-func compareInt64ToInts(ctx context.Context, av types.Int64, op CompareOp, targets []int, _ ...interface{}) error {
+func compareInt64ToInts(_ context.Context, av types.Int64, op CompareOp, targets []int, _ ...interface{}) error {
 	asInt := int(av.ValueInt64())
 	switch op {
 	case OneOf:

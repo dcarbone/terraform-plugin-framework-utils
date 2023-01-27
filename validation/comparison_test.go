@@ -596,6 +596,126 @@ func TestComparison_Strings(t *testing.T) {
 			expectError: true,
 		},
 
+		// set []string sensitive eq
+		{
+			name: "set_eq_sensitive_ok",
+			op:   validation.Equal,
+			act:  types.SetValueMust(types.StringType, []attr.Value{types.StringValue(one), types.StringValue(two)}),
+			tgt:  targetOneTwo,
+		},
+		{
+			name:        "set_eq_sensitive_nok_casing",
+			op:          validation.Equal,
+			act:         types.SetValueMust(types.StringType, []attr.Value{types.StringValue(oNe), types.StringValue(twO)}),
+			tgt:         targetOneTwo,
+			expectError: true,
+		},
+		{
+			name:        "set_eq_sensitive_nok_order",
+			op:          validation.Equal,
+			act:         types.SetValueMust(types.StringType, []attr.Value{types.StringValue(two), types.StringValue(one)}),
+			tgt:         targetOneTwo,
+			expectError: true,
+		},
+		{
+			name:        "set_eq_sensitive_nok_len",
+			op:          validation.Equal,
+			act:         types.SetValueMust(types.StringType, []attr.Value{types.StringValue(one), types.StringValue(two), types.StringValue(three)}),
+			tgt:         targetOneTwo,
+			expectError: true,
+		},
+
+		// set []string insensitive eq
+		{
+			name: "set_eq_insensitive_ok",
+			op:   validation.Equal,
+			act:  types.SetValueMust(types.StringType, []attr.Value{types.StringValue(one), types.StringValue(two)}),
+			tgt:  targetOneTwo,
+			meta: []interface{}{true},
+		},
+		{
+			name: "set_eq_insensitive_ok_casing",
+			op:   validation.Equal,
+			act:  types.SetValueMust(types.StringType, []attr.Value{types.StringValue(oNe), types.StringValue(twO)}),
+			tgt:  targetOneTwo,
+			meta: []interface{}{true},
+		},
+		{
+			name:        "set_eq_insensitive_nok_order",
+			op:          validation.Equal,
+			act:         types.SetValueMust(types.StringType, []attr.Value{types.StringValue(two), types.StringValue(one)}),
+			tgt:         targetOneTwo,
+			expectError: true,
+			meta:        []interface{}{true},
+		},
+		{
+			name:        "set_eq_insensitive_nok_len",
+			op:          validation.Equal,
+			act:         types.SetValueMust(types.StringType, []attr.Value{types.StringValue(one), types.StringValue(two), types.StringValue(three)}),
+			tgt:         targetOneTwo,
+			expectError: true,
+			meta:        []interface{}{true},
+		},
+
+		// set []string sensitive neq
+		{
+			name: "set_neq_sensitive_ok_order",
+			op:   validation.NotEqual,
+			act:  types.SetValueMust(types.StringType, []attr.Value{types.StringValue(two), types.StringValue(one)}),
+			tgt:  targetOneTwo,
+		},
+		{
+			name: "set_neq_sensitive_ok_casing",
+			op:   validation.NotEqual,
+			act:  types.SetValueMust(types.StringType, []attr.Value{types.StringValue(oNe), types.StringValue(twO)}),
+			tgt:  targetOneTwo,
+		},
+		{
+			name: "set_neq_sensitive_ok_len",
+			op:   validation.NotEqual,
+			act:  types.SetValueMust(types.StringType, []attr.Value{types.StringValue(one), types.StringValue(two), types.StringValue(three)}),
+			tgt:  targetOneTwo,
+		},
+		{
+			name:        "set_neq_sensitive_nok",
+			op:          validation.NotEqual,
+			act:         types.SetValueMust(types.StringType, []attr.Value{types.StringValue(one), types.StringValue(two)}),
+			tgt:         targetOneTwo,
+			expectError: true,
+		},
+
+		// set []string insensitive neq
+		{
+			name: "set_neq_insensitive_ok_order",
+			op:   validation.NotEqual,
+			act:  types.SetValueMust(types.StringType, []attr.Value{types.StringValue(two), types.StringValue(one)}),
+			tgt:  targetOneTwo,
+			meta: []interface{}{true},
+		},
+		{
+			name: "set_neq_insensitive_ok_len",
+			op:   validation.NotEqual,
+			act:  types.SetValueMust(types.StringType, []attr.Value{types.StringValue(one), types.StringValue(two), types.StringValue(three)}),
+			tgt:  targetOneTwo,
+			meta: []interface{}{true},
+		},
+		{
+			name:        "set_neq_insensitive_nok_same",
+			op:          validation.NotEqual,
+			act:         types.SetValueMust(types.StringType, []attr.Value{types.StringValue(one), types.StringValue(two)}),
+			tgt:         targetOneTwo,
+			meta:        []interface{}{true},
+			expectError: true,
+		},
+		{
+			name:        "set_neq_insensitive_nok_casing",
+			op:          validation.NotEqual,
+			act:         types.SetValueMust(types.StringType, []attr.Value{types.StringValue(oNe), types.StringValue(twO)}),
+			tgt:         targetOneTwo,
+			meta:        []interface{}{true},
+			expectError: true,
+		},
+
 		// string sensitive oneof
 		{
 			name: "oneof_sensitive_ok_first",

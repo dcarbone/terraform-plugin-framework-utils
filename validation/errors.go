@@ -11,8 +11,8 @@ var (
 	ErrNoComparisonFuncRegistered     = errors.New("no comparison func registered")
 	ErrTypeConversionFailed           = errors.New("type conversion failed")
 	ErrComparisonFailed               = errors.New("comparison failed")
-	ErrUnexpectedComparisonTargetType = errors.New("unexpected comparison target value type")
-	ErrUnexpectedComparisonActualType = errors.New("unexpected comparison actual value type")
+	ErrUnexpectedComparisonTargetType = errors.New("unexpected comparison \"target\" value type")
+	ErrUnexpectedComparisonActualType = errors.New("unexpected comparison \"actual\" value type")
 )
 
 func NoComparisonFuncRegisteredError(op CompareOp, t interface{}) error {
