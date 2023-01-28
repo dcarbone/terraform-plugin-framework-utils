@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"os"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -362,29 +363,69 @@ func Compare(op CompareOp, target interface{}, meta ...interface{}) Generic {
 }
 
 // TestIsURL asserts that the provided value can be parsed by url.Parse()
-func TestIsURL() TestFunc {
+func TestIsURL(requireScheme string, requirePort int) TestFunc {
 	return func(ctx context.Context, req GenericRequest, resp *GenericResponse) {
-		if _, err := url.Parse(conv.AttributeValueToString(req.ConfigValue)); err != nil {
-			resp.Diagnostics.AddAttributeError(
-				req.Path,
-				"Value is not parseable as URL",
-				fmt.Sprintf("Value is not parseable as url.URL: %v", err),
-			)
+		requireScheme := requireScheme
+		requirePort := strconv.Itoa(requirePort)
+
+		validateURL := func(v string) {
+			if purl, err := url.Parse(v); err != nil {
+				resp.Diagnostics.AddAttributeError(
+					req.Path,
+					"Value is not parseable as URL",
+					fmt.Sprintf("Value is not parseable as url.URL: %v", err),
+				)
+			} else {
+				if requireScheme != "" && purl.Scheme != requireScheme {
+					resp.Diagnostics.AddAttributeError(
+						req.Path,
+						"URL scheme mismatch",
+						fmt.Sprintf("Defined scheme %q does not match required %q", purl.Scheme, requireScheme),
+					)
+				}
+				if requirePort != "" && purl.Port() != requirePort {
+					resp.Diagnostics.AddAttributeError(
+						req.Path,
+						"URL port mismatch",
+						fmt.Sprintf("Defined port %q does not match required %q", purl.Port(), requirePort),
+					)
+				}
+			}
+		}
+
+		if lv, ok := req.ConfigValue.(types.List); ok {
+			for _, v := range lv.Elements() {
+				validateURL(conv.AttributeValueToString(v))
+			}
+		} else if sv, ok := req.ConfigValue.(types.Set); ok {
+			for _, v := range sv.Elements() {
+				validateURL(conv.AttributeValueToString(v))
+			}
+		} else if mv, ok := req.ConfigValue.(types.Map); ok {
+			for _, v := range mv.Elements() {
+				validateURL(conv.AttributeValueToString(v))
+			}
+		} else {
+			validateURL(conv.AttributeValueToString(req.ConfigValue))
 		}
 	}
 }
 
-var isURLValidator = NewGenericValidator(GenericConfig{
-	Description:         "Tests if provided value is parseable as url.URL",
-	MarkdownDescription: "Tests if provided value is parseable as url.URL",
-	TestFunc:            TestIsURL(),
-	SkipWhenNull:        true,
-	SkipWhenUnknown:     true,
-})
+// IsURLWith returns a validator that asserts a given attribute's value(s) are parseable as an URL, and that it / they
+// have a specific scheme and / or port
+func IsURLWith(requiredScheme string, requiredPort int) Generic {
+	return NewGenericValidator(GenericConfig{
+		Description:         "Tests if provided value is parseable as url.URL",
+		MarkdownDescription: "Tests if provided value is parseable as url.URL",
+		TestFunc:            TestIsURL(requiredScheme, requiredPort),
+		SkipWhenNull:        true,
+		SkipWhenUnknown:     true,
+	})
+}
 
-// IsURL returns a validator that asserts a given attribute value is parseable as a URL
+// IsURL returns a validator that asserts a given attribute's value(s) are parseable as an URL
 func IsURL() Generic {
-	return isURLValidator
+	return IsURLWith("", 0)
 }
 
 // TestIsDurationString asserts that a given attribute's value is a valid time.Duration string
