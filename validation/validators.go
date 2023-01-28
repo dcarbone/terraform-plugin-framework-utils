@@ -28,7 +28,7 @@ type GenericConfig struct {
 	SkipWhenUnknown     bool
 }
 
-// Generic is a validator that can be applied to variable attribute types
+// Generic  a validator that can be applied to variable attribute types
 type Generic struct {
 	validator.Describer
 
@@ -417,7 +417,7 @@ func IsDurationString() Generic {
 // at runtime
 func TestEnvVarValued() TestFunc {
 	return func(ctx context.Context, req GenericRequest, resp *GenericResponse) {
-		varName := conv.StringValueToString(req.ConfigValue)
+		varName := conv.AttributeValueToString(req.ConfigValue)
 		if v, ok := os.LookupEnv(varName); !ok || strings.TrimSpace(v) == "" {
 			resp.Diagnostics.AddAttributeError(
 				req.Path,
@@ -446,7 +446,7 @@ func EnvVarValued() Generic {
 // attribute value.
 func TestFileIsReadable() TestFunc {
 	return func(ctx context.Context, req GenericRequest, resp *GenericResponse) {
-		fname := conv.StringValueToString(req.ConfigValue)
+		fname := conv.AttributeValueToString(req.ConfigValue)
 		fh, err := os.Open(fname)
 
 		if fh != nil {

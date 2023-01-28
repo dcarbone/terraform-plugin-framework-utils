@@ -128,30 +128,13 @@ func ValueToStringType(v attr.Value) types.String {
 // function body for a particular type if you're interested in what "empty" means.
 func TestAttributeValueState(av attr.Value) error {
 	var (
-		undefined bool
-		null      bool
-		empty     bool
+		empty bool
+
+		undefined = av.IsUnknown()
+		null      = av.IsNull()
 	)
 
 	switch av.(type) {
-	// bool values cannot be "empty"
-	case types.Bool, *types.Bool:
-		tv := ValueToBoolType(av)
-		undefined = tv.IsUnknown()
-		null = tv.IsNull()
-
-	// float values cannot be "empty"
-	case types.Float64, *types.Float64:
-		tv := ValueToFloat64Type(av)
-		undefined = tv.IsUnknown()
-		null = tv.IsNull()
-
-	// int values cannot be "empty"
-	case types.Int64, *types.Int64:
-		tv := ValueToInt64Type(av)
-		undefined = tv.IsUnknown()
-		null = tv.IsNull()
-
 	case types.List, *types.List:
 		tv := ValueToListType(av)
 		undefined = tv.IsUnknown()
@@ -164,17 +147,6 @@ func TestAttributeValueState(av attr.Value) error {
 		null = tv.IsNull()
 		empty = AttributeValueLength(av) == 0
 
-	case types.Number, *types.Number:
-		tv := ValueToNumberType(av)
-		undefined = tv.IsUnknown()
-		null = tv.IsNull()
-
-	// todo: implement object "emptiness" check
-	case types.Object, *types.Object:
-		tv := ValueToObjectType(av)
-		undefined = tv.IsUnknown()
-		null = tv.IsNull()
-
 	case types.Set, *types.Set:
 		tv := ValueToSetType(av)
 		undefined = tv.IsUnknown()
@@ -185,10 +157,7 @@ func TestAttributeValueState(av attr.Value) error {
 		tv := ValueToStringType(av)
 		undefined = tv.IsUnknown()
 		null = tv.IsNull()
-		empty = StringValueToString(av) == ""
-
-	default:
-		return ValueTypeUnhandledError("length_check", av)
+		empty = AttributeValueToString(av) == ""
 	}
 
 	if undefined {
@@ -203,59 +172,49 @@ func TestAttributeValueState(av attr.Value) error {
 }
 
 // BoolValueToString accepts an instance of either types.Bool or *types.Bool, attempting to convert the value to a string.
+// DEPRECATED: use AttributeValueToString in all cases
 func BoolValueToString(v attr.Value) string {
-	return strconv.FormatBool(ValueToBoolType(v).ValueBool())
+	return AttributeValueToString(v)
 }
 
 // Float64ValueToString accepts an instance of either types.Float64 or *types.Float64, attempting to convert the value to
 // a string.
+// DEPRECATED: use AttributeValueToString in all cases
 func Float64ValueToString(v attr.Value) string {
-	return strconv.FormatFloat(ValueToFloat64Type(v).ValueFloat64(), 'g', int(FloatPrecision), 64)
+	return AttributeValueToString(v)
 }
 
 // Int64ValueToString accepts an instance of either types.Int64 or *types.Int64, attempting to convert the value to a string.
+// DEPRECATED: use AttributeValueToString in all cases
 func Int64ValueToString(v attr.Value) string {
-	return strconv.FormatInt(ValueToInt64Type(v).ValueInt64(), 10)
+	return AttributeValueToString(v)
 }
 
 // NumberValueToString accepts an instance of either types.Number or *types.Number, attempting to convert the value to
 // a string.
+// DEPRECATED: use AttributeValueToString in all cases
 func NumberValueToString(v attr.Value) string {
-	return ValueToNumberType(v).ValueBigFloat().String()
+	return AttributeValueToString(v)
 }
 
 // StringValueToString accepts an instance of either types.String or *types.String, returning the raw string value
+// DEPRECATED: use AttributeValueToString in all cases
 func StringValueToString(v attr.Value) string {
-	return ValueToStringType(v).ValueString()
+	return AttributeValueToString(v)
 }
 
 // StringValueToBytes accepts an instance of either types.String or *types.String, returning the raw string value cast
 // to a byte slice
 func StringValueToBytes(v attr.Value) []byte {
-	return []byte(StringValueToString(v))
+	return []byte(AttributeValueToString(v))
 }
 
 // AttributeValueToString will attempt to execute the appropriate AttributeStringerFunc from the ones registered.
 func AttributeValueToString(v attr.Value) string {
-	switch v.(type) {
-	case types.Bool, *types.Bool:
-		return BoolValueToString(v)
-
-	case types.Float64, *types.Float64:
-		return Float64ValueToString(v)
-
-	case types.Int64, *types.Int64:
-		return Int64ValueToString(v)
-
-	case types.Number, *types.Number:
-		return NumberValueToString(v)
-
-	case types.String, *types.String:
-		return StringValueToString(v)
-
-	default:
-		return fmt.Sprintf("%T", v)
+	if s, ok := v.(types.String); ok {
+		return s.ValueString()
 	}
+	return v.String()
 }
 
 // AttributeValueToStrings attempts to convert the provided attr.Value into a slice of strings.
@@ -268,7 +227,7 @@ func AttributeValueToStrings(av attr.Value) []string {
 		return StringSetToStrings(av)
 	default:
 		out := make([]string, 0)
-		out = append(out, ValueToStringType(av).ValueString())
+		out = append(out, AttributeValueToString(av))
 		return out
 	}
 }
@@ -435,7 +394,7 @@ func StringListToStrings(v attr.Value) []string {
 	vt := ValueToListType(v)
 	out := make([]string, len(vt.Elements()))
 	for i, ve := range vt.Elements() {
-		out[i] = StringValueToString(ve)
+		out[i] = AttributeValueToString(ve)
 	}
 	return out
 }
@@ -446,7 +405,7 @@ func StringSetToStrings(v attr.Value) []string {
 	vt := ValueToSetType(v)
 	out := make([]string, len(vt.Elements()))
 	for i, ve := range vt.Elements() {
-		out[i] = StringValueToString(ve)
+		out[i] = AttributeValueToString(ve)
 	}
 	return out
 }
@@ -563,7 +522,7 @@ func AttributeValueToBigFloat(v attr.Value) (*big.Float, error) {
 		return NumberValueToBigFloat(v), nil
 
 	case types.String, *types.String:
-		bf, _, err := big.ParseFloat(StringValueToString(v), 10, FloatPrecision, big.ToZero)
+		bf, _, err := big.ParseFloat(AttributeValueToString(v), 10, FloatPrecision, big.ToZero)
 		return bf, err
 
 	default:

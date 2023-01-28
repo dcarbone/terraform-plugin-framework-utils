@@ -241,7 +241,7 @@ func compareString(_ context.Context, av attr.Value, op CompareOp, target interf
 			caseInsensitive = b
 		}
 	}
-	actStr := conv.StringValueToString(av)
+	actStr := conv.AttributeValueToString(av)
 	tgtStr, ok := target.(string)
 	if !ok {
 		return UnexpectedComparisonTargetTypeError("compare_string", target, op, "", nil)
