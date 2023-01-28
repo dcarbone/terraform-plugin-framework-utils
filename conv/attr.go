@@ -2,6 +2,7 @@ package conv
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -38,9 +39,14 @@ func FormatAttributePathSteps(pathSteps ...tftypes.AttributePathStep) string {
 			bits = append(bits, string(pathStep.(tftypes.AttributeName)))
 		case tftypes.ElementKeyString:
 			bits = append(bits, string(pathStep.(tftypes.ElementKeyString)))
+		case tftypes.ElementKeyInt:
+			bits = append(bits, strconv.FormatInt(int64(pathStep.(tftypes.ElementKeyInt)), 10))
+		case tftypes.ElementKeyValue:
+			bits = append(bits, (tftypes.Value)(pathStep.(tftypes.ElementKeyValue)).String())
 
 		default:
-			panic(fmt.Sprintf("no case to convert type %T (%[1]v) to string", pathStep))
+			// if this is reached, a new path step implementation has been created
+			panic(fmt.Sprintf("no case to convert type %T (%[1]v) to string, please create issue with this error message", pathStep))
 		}
 	}
 	return strings.Join(bits, ".")

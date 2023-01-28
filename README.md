@@ -38,14 +38,14 @@ and from Terraform and Go easy and obvious.
 You can see the complete list of available conversions here: 
 [terraform-plugin-framework-utils/conv](https://github.com/dcarbone/terraform-plugin-framework-utils/blob/main/conv)
 
-# Attribute Validation
+# Generic Validation
 
-The Terraform Plugin Framework has a great [validation](https://www.terraform.io/plugin/framework/validation) interface
-that makes it easy to create custom validation rules for the various schemas you define in your provider.
+The Terraform Plugin Framework has a great set of per-value type validator interfaces that you may implement as needed:
+[validators](https://www.terraform.io/plugin/framework/validation).  This does not always fit the need, however,
+as some validations need not be aware of type, or may benefit from being applicable to multiple types.
 
-Being in beta, the HashiCorp team has yet to provide a built-in set of providers.  I have created a few that I have
-found useful when creating my own providers, and provided a small wrapper to make creating new providers as
-simple as [defining a function](validation/validators.go#25).
+To facilitate this, I have created a few that I have found useful when creating my own providers, and defined a
+small wrapper to make creating new validators as simple as [defining a function](validation/validators.go#19).
 
 ## Provided Validators
 
@@ -55,7 +55,7 @@ Fails validation if the attribute is null or unknown
 
 ```go
 {
-    Validators: []tfsdk.AttributeValidator{
+    Validators: []validator.{Type}{
         validation.Required()
     },
 }
@@ -68,7 +68,7 @@ will attempt to convert the attribute to a string first.
 
 ```go
 {
-    Validators: []tfsdk.AttributeValidator{
+    Validators: []validator.{Type}{
         validation.RegexpMatch("{{ your regex here }}")
     },
 }
@@ -81,7 +81,7 @@ will attempt to convert the attribute to a string first.
 
 ```go
 {
-    Validators: []tfsdk.AttributeValidator{
+    Validators: []validator.{Type}{
     	validation.RegexpNotMatch("{{ your regex here }}")
     },
 }
@@ -93,7 +93,7 @@ Fails validation if the attribute's value's length is not within the specified b
 
 ```go
 {
-    Validators: []tfsdk.AttributeValidator{
+    Validators: []validator.{Type}{
         // lower limit
         validation.Length(5, -1),
 
@@ -115,7 +115,7 @@ your own [ComparisonFunc](validation/comparison.go#44) using [SetComparisonFunc]
 
 ```go
 {
-    Validators: []tfsdk.AttributeValidator{
+    Validators: []validator.{Type}{
         // equal
         validation.Compare(validation.Equal, 5),
         // string comparisons are case sensitive by default
@@ -175,7 +175,7 @@ Fails validation if the attribute's value is not parseable by `url.Parse`
 
 ```go
 {
-    Validators: []tfsdk.AttributeValidator{
+    Validators: []validator.{Type}{
         validation.IsUrl()
     }
 }
@@ -187,7 +187,7 @@ Fails validation if the attribute's value is not parseable by `time.ParseDuratio
 
 ```go
 {
-    Validators: []tfsdk.AttributeValidator{
+    Validators: []validator.{Type}{
         validation.IsDurationString()
     }
 }
@@ -199,7 +199,7 @@ Fails validation if the environment variable name defined by the attribute's val
 
 ```go
 {
-    Validators: []tfsdk.AttributeValidator{
+    Validators: []validator.{Type}{
         validation.EnvVarValued()
     }
 }
@@ -211,7 +211,7 @@ Fails validation if the file at the path defined in the attribute's value is not
 
 ```go
 {
-    Validators: []tfsdk.AttributeValidator{
+    Validators: []validator.{Type}{
         validation.FileIsReadable()
     }
 }
@@ -223,7 +223,7 @@ Fails validation if the attribute is valued and the configured sibling attribute
 
 ```go
 {
-    Validators: []tfsdk.AttributeValidator{
+    Validators: []validator.{Type}{
         validation.MutuallyExclusiveSibling("{{ sibling field name }}")
     }
 }
@@ -242,7 +242,7 @@ provider "whatever" {
 ```go
 // Example validators list defined on the `address` attribute's schema
 {
-    Validators: []tfsdk.AttributeValidator{
+    Validators: []validator.{Type}{
         validation.MutuallyExclusiveSibling("address_env")
     }
 }
@@ -258,7 +258,7 @@ Requires that two sibling attributes either both be valued or not valued.
 
 ```go
 {
-    Validators: []tfsdk.AttributeValidator{
+    Validators: []validator.{Type}{
         validation.MutuallyInclusiveSibling("{{ sibling field name }}")
     }
 }
@@ -277,7 +277,7 @@ provider "whatever" {
 ```go
 // Example validators list defined on the `ssh_key_password` attribute's schema
 {
-    Validators: []tfsdk.AttributeValidator{
+    Validators: []validator.{Type}{
         validation.MutuallyInclusiveSibling("ssh_key")
     }
 }
