@@ -111,9 +111,9 @@ func ValueToStringType(v attr.Value) types.String {
 // TestAttributeValueState - Determine the state of the attribute value
 //
 // An Attribute Value can have one of 3 main states:
-// 		1. Unknown
-//  	2. Null
-//  	3. Valued
+//  1. Unknown
+//  2. Null
+//  3. Valued
 //
 // This function tests every attr.Value implementation for each of these states, and additionally performs an
 // "emptiness" check.
@@ -122,7 +122,7 @@ func ValueToStringType(v attr.Value) types.String {
 //
 // This function will only ever return one error, going from greatest to least significance:
 //
-// 		unknown > null > empty > non-empty
+//	unknown > null > empty > non-empty
 //
 // A 'nil' response from this function means the attribute's value was defined to a non-"empty" value at runtime. See
 // function body for a particular type if you're interested in what "empty" means.
@@ -137,54 +137,54 @@ func TestAttributeValueState(av attr.Value) error {
 	// bool values cannot be "empty"
 	case types.Bool, *types.Bool:
 		tv := ValueToBoolType(av)
-		undefined = tv.Unknown
-		null = tv.Null
+		undefined = tv.IsUnknown()
+		null = tv.IsNull()
 
 	// float values cannot be "empty"
 	case types.Float64, *types.Float64:
 		tv := ValueToFloat64Type(av)
-		undefined = tv.Unknown
-		null = tv.Null
+		undefined = tv.IsUnknown()
+		null = tv.IsNull()
 
 	// int values cannot be "empty"
 	case types.Int64, *types.Int64:
 		tv := ValueToInt64Type(av)
-		undefined = tv.Unknown
-		null = tv.Null
+		undefined = tv.IsUnknown()
+		null = tv.IsNull()
 
 	case types.List, *types.List:
 		tv := ValueToListType(av)
-		undefined = tv.Unknown
-		null = tv.Null
+		undefined = tv.IsUnknown()
+		null = tv.IsNull()
 		empty = AttributeValueLength(av) == 0
 
 	case types.Map, *types.Map:
 		tv := ValueToMapType(av)
-		undefined = tv.Unknown
-		null = tv.Null
+		undefined = tv.IsUnknown()
+		null = tv.IsNull()
 		empty = AttributeValueLength(av) == 0
 
 	case types.Number, *types.Number:
 		tv := ValueToNumberType(av)
-		undefined = tv.Unknown
-		null = tv.Null
+		undefined = tv.IsUnknown()
+		null = tv.IsNull()
 
 	// todo: implement object "emptiness" check
 	case types.Object, *types.Object:
 		tv := ValueToObjectType(av)
-		undefined = tv.Unknown
-		null = tv.Null
+		undefined = tv.IsUnknown()
+		null = tv.IsNull()
 
 	case types.Set, *types.Set:
 		tv := ValueToSetType(av)
-		undefined = tv.Unknown
-		null = tv.Null
+		undefined = tv.IsUnknown()
+		null = tv.IsNull()
 		empty = AttributeValueLength(av) > 0
 
 	case types.String, *types.String:
 		tv := ValueToStringType(av)
-		undefined = tv.Unknown
-		null = tv.Null
+		undefined = tv.IsUnknown()
+		null = tv.IsNull()
 		empty = StringValueToString(av) == ""
 
 	default:
@@ -204,29 +204,29 @@ func TestAttributeValueState(av attr.Value) error {
 
 // BoolValueToString accepts an instance of either types.Bool or *types.Bool, attempting to convert the value to a string.
 func BoolValueToString(v attr.Value) string {
-	return strconv.FormatBool(ValueToBoolType(v).Value)
+	return strconv.FormatBool(ValueToBoolType(v).ValueBool())
 }
 
 // Float64ValueToString accepts an instance of either types.Float64 or *types.Float64, attempting to convert the value to
 // a string.
 func Float64ValueToString(v attr.Value) string {
-	return strconv.FormatFloat(ValueToFloat64Type(v).Value, 'g', int(FloatPrecision), 64)
+	return strconv.FormatFloat(ValueToFloat64Type(v).ValueFloat64(), 'g', int(FloatPrecision), 64)
 }
 
 // Int64ValueToString accepts an instance of either types.Int64 or *types.Int64, attempting to convert the value to a string.
 func Int64ValueToString(v attr.Value) string {
-	return strconv.FormatInt(ValueToInt64Type(v).Value, 10)
+	return strconv.FormatInt(ValueToInt64Type(v).ValueInt64(), 10)
 }
 
 // NumberValueToString accepts an instance of either types.Number or *types.Number, attempting to convert the value to
 // a string.
 func NumberValueToString(v attr.Value) string {
-	return ValueToNumberType(v).Value.String()
+	return ValueToNumberType(v).ValueBigFloat().String()
 }
 
 // StringValueToString accepts an instance of either types.String or *types.String, returning the raw string value
 func StringValueToString(v attr.Value) string {
-	return ValueToStringType(v).Value
+	return ValueToStringType(v).ValueString()
 }
 
 // StringValueToBytes accepts an instance of either types.String or *types.String, returning the raw string value cast
@@ -268,7 +268,7 @@ func AttributeValueToStrings(av attr.Value) []string {
 		return StringSetToStrings(av)
 	default:
 		out := make([]string, 0)
-		out = append(out, ValueToStringType(av).Value)
+		out = append(out, ValueToStringType(av).ValueString())
 		return out
 	}
 }
@@ -276,25 +276,25 @@ func AttributeValueToStrings(av attr.Value) []string {
 // LengthOfListValue returns the number of elements in the List attribute.  This will return 0 if the attribute was not set,
 // set to null, or defined as an empty list.
 func LengthOfListValue(v attr.Value) int {
-	return len(ValueToListType(v).Elems)
+	return len(ValueToListType(v).Elements())
 }
 
 // LengthOfMapValue returns the number of elements in the Map attribute.  This will return 0 if the attribute was not set,
 // set to null, or defined as an empty map.
 func LengthOfMapValue(v attr.Value) int {
-	return len(ValueToMapType(v).Elems)
+	return len(ValueToMapType(v).Elements())
 }
 
 // LengthOfSetValue returns the number of elements in the Set attribute.  This will return 0 if the attribute was not set,
 // set to null, or defined as an empty set.
 func LengthOfSetValue(v attr.Value) int {
-	return len(ValueToSetType(v).Elems)
+	return len(ValueToSetType(v).Elements())
 }
 
 // LengthOfStringValue returns the number of bytes in the String attribute.  This will return 0 if the attribute was not set,
 // set to 0, or defined as an empty string.
 func LengthOfStringValue(v attr.Value) int {
-	return len(ValueToStringType(v).Value)
+	return len(ValueToStringType(v).ValueString())
 }
 
 // AttributeValueLength attempts to determine the "length" of an attribute value, for types where that value has
@@ -320,7 +320,7 @@ func AttributeValueLength(v attr.Value) int {
 
 // BoolValueToBool accepts either a types.Bool or *types.Bool and extracts the raw bool value within
 func BoolValueToBool(v attr.Value) bool {
-	return ValueToBoolType(v).Value
+	return ValueToBoolType(v).ValueBool()
 }
 
 // BoolValueToBoolPtr accepts either a types.Bool or *types.Bool, extracting the raw bool value within and returning
@@ -329,28 +329,28 @@ func BoolValueToBool(v attr.Value) bool {
 // If the Value is unknown or null, a nil is returned.
 func BoolValueToBoolPtr(v attr.Value) *bool {
 	vt := ValueToBoolType(v)
-	if vt.Unknown || vt.Null {
+	if vt.IsUnknown() || vt.IsNull() {
 		return nil
 	}
 	vPtr := new(bool)
-	*vPtr = vt.Value
+	*vPtr = vt.ValueBool()
 	return vPtr
 }
 
 // NumberValueToBigFloat accepts either a types.Number or *types.Number, returning the raw *big.Float value.  This may
 // be nil if the value was not set.
 func NumberValueToBigFloat(v attr.Value) *big.Float {
-	return ValueToNumberType(v).Value
+	return ValueToNumberType(v).ValueBigFloat()
 }
 
 // NumberValueToInt64 accepts either a types.Number or *types.Number, returning an int64 representation of the
 // *big.Float value within.  It will return [0, big.Exact] of the value was not set.
 func NumberValueToInt64(v attr.Value) (int64, big.Accuracy) {
 	vt := ValueToNumberType(v)
-	if vt.Value == nil {
+	if vt.IsNull() || vt.IsUnknown() {
 		return 0, big.Exact
 	}
-	return vt.Value.Int64()
+	return vt.ValueBigFloat().Int64()
 }
 
 // NumberValueToInt accepts either a types.Number or *types.Number, returning an int representation of the *big.Float
@@ -364,15 +364,15 @@ func NumberValueToInt(v attr.Value) (int, big.Accuracy) {
 // *big.Float value within.  It will return [0.0, big.Exact] of the value was not set.
 func NumberValueToFloat64(v attr.Value) (float64, big.Accuracy) {
 	vt := ValueToNumberType(v)
-	if vt.Value == nil {
+	if vt.IsUnknown() || vt.IsNull() {
 		return 0.0, big.Exact
 	}
-	return vt.Value.Float64()
+	return vt.ValueBigFloat().Float64()
 }
 
 // Int64ValueToInt64 accepts either a types.Int64 or *types.Int64, returning the raw int64 value within
 func Int64ValueToInt64(v attr.Value) int64 {
-	return ValueToInt64Type(v).Value
+	return ValueToInt64Type(v).ValueInt64()
 }
 
 // Int64ValueToInt accepts either a types.Int64 or *types.Int64, returning an int representation of the value within
@@ -386,17 +386,17 @@ func Int64ValueToInt(v attr.Value) int {
 // If the Value is unknown or null, a nil is returned.
 func Int64ValueToIntPtr(v attr.Value) *int {
 	vt := ValueToInt64Type(v)
-	if vt.Unknown || vt.Null {
+	if vt.IsUnknown() || vt.IsNull() {
 		return nil
 	}
 	vPtr := new(int)
-	*vPtr = int(vt.Value)
+	*vPtr = int(vt.ValueInt64())
 	return vPtr
 }
 
 // Float64ValueToFloat64 accepts either a types.Float64 or *types.Float64, returning the raw float64 value within
 func Float64ValueToFloat64(v attr.Value) float64 {
-	return ValueToFloat64Type(v).Value
+	return ValueToFloat64Type(v).ValueFloat64()
 }
 
 // Float64ValueToFloat32 accepts either a types.Float64 or *types.Float64, returning a float32 representation of the
@@ -407,12 +407,12 @@ func Float64ValueToFloat32(v attr.Value) float32 {
 
 // StringValueToFloat64 accepts either a types.String or *types.string, attempting to parse the value as a float64
 func StringValueToFloat64(v attr.Value) (float64, error) {
-	return strconv.ParseFloat(ValueToStringType(v).Value, 64)
+	return strconv.ParseFloat(ValueToStringType(v).ValueString(), 64)
 }
 
 // StringValueToInt64 accepts either a types.String or *types.String, attempting to parse the value as an int64.
 func StringValueToInt64(v attr.Value) (int, error) {
-	return strconv.Atoi(ValueToStringType(v).Value)
+	return strconv.Atoi(ValueToStringType(v).ValueString())
 }
 
 // StringValueToStringPtr accepts an instance of either types.String or *types.String, returning a pointer to a copy
@@ -421,11 +421,11 @@ func StringValueToInt64(v attr.Value) (int, error) {
 // If the Value is unknown or null, a nil is returned.
 func StringValueToStringPtr(v attr.Value) *string {
 	vt := ValueToStringType(v)
-	if vt.Unknown || vt.Null {
+	if vt.IsUnknown() || vt.IsNull() {
 		return nil
 	}
 	vPtr := new(string)
-	*vPtr = vt.Value
+	*vPtr = vt.ValueString()
 	return vPtr
 }
 
@@ -433,8 +433,8 @@ func StringValueToStringPtr(v attr.Value) *string {
 // returning a slice of strings of the value of each element
 func StringListToStrings(v attr.Value) []string {
 	vt := ValueToListType(v)
-	out := make([]string, len(vt.Elems))
-	for i, ve := range vt.Elems {
+	out := make([]string, len(vt.Elements()))
+	for i, ve := range vt.Elements() {
 		out[i] = StringValueToString(ve)
 	}
 	return out
@@ -444,8 +444,8 @@ func StringListToStrings(v attr.Value) []string {
 // returning a slice of strings of the value of each element
 func StringSetToStrings(v attr.Value) []string {
 	vt := ValueToSetType(v)
-	out := make([]string, len(vt.Elems))
-	for i, ve := range vt.Elems {
+	out := make([]string, len(vt.Elements()))
+	for i, ve := range vt.Elements() {
 		out[i] = StringValueToString(ve)
 	}
 	return out
@@ -455,8 +455,8 @@ func StringSetToStrings(v attr.Value) []string {
 // returning a slice of ints of the value of each element.
 func Int64ListToInts(v attr.Value) []int {
 	vt := ValueToListType(v)
-	out := make([]int, len(vt.Elems))
-	for i, ve := range vt.Elems {
+	out := make([]int, len(vt.Elements()))
+	for i, ve := range vt.Elements() {
 		out[i] = Int64ValueToInt(ve)
 	}
 	return out
@@ -466,8 +466,8 @@ func Int64ListToInts(v attr.Value) []int {
 // returning a slice of ints of the value of each element
 func Int64SetToInts(v attr.Value) []int {
 	vt := ValueToSetType(v)
-	out := make([]int, len(vt.Elems))
-	for i, ve := range vt.Elems {
+	out := make([]int, len(vt.Elements()))
+	for i, ve := range vt.Elements() {
 		out[i] = Int64ValueToInt(ve)
 	}
 	return out
@@ -477,8 +477,8 @@ func Int64SetToInts(v attr.Value) []int {
 // returning a slice of ints of the value of each element
 func NumberListToInts(v attr.Value) []int {
 	vt := ValueToListType(v)
-	out := make([]int, len(vt.Elems))
-	for i, ve := range vt.Elems {
+	out := make([]int, len(vt.Elements()))
+	for i, ve := range vt.Elements() {
 		iv, _ := NumberValueToInt(ve)
 		out[i] = iv
 	}
@@ -489,8 +489,8 @@ func NumberListToInts(v attr.Value) []int {
 // returning a slice of ints of the value of each element
 func NumberSetToInts(v attr.Value) []int {
 	vt := ValueToSetType(v)
-	out := make([]int, len(vt.Elems))
-	for i, ve := range vt.Elems {
+	out := make([]int, len(vt.Elements()))
+	for i, ve := range vt.Elements() {
 		iv, _ := NumberValueToInt(ve)
 		out[i] = iv
 	}
@@ -573,17 +573,17 @@ func AttributeValueToBigFloat(v attr.Value) (*big.Float, error) {
 
 // BoolToBoolValue takes a bool and wraps it up as a types.Bool
 func BoolToBoolValue(b bool) types.Bool {
-	return types.Bool{Value: b}
+	return types.BoolValue(b)
 }
 
 // Int64ToInt64Value takes an int64 and wraps it up as a types.Int64
 func Int64ToInt64Value(i int64) types.Int64 {
-	return types.Int64{Value: i}
+	return types.Int64Value(i)
 }
 
 // Int64ToNumberValue takes an int64 and wraps it up as a types.Number
 func Int64ToNumberValue(i int64) types.Number {
-	return types.Number{Value: new(big.Float).SetInt64(i)}
+	return types.NumberValue(new(big.Float).SetInt64(i))
 }
 
 // IntToInt64Value takes an int and wraps it up as a types.Int64
@@ -596,9 +596,9 @@ func IntToInt64Value(i int) types.Int64 {
 // If the go value is nil, Null will be true on the outgoing attr.Value type
 func IntPtrToInt64Value(i *int) types.Int64 {
 	if i == nil {
-		return types.Int64{Null: true}
+		return types.Int64Null()
 	}
-	return types.Int64{Value: int64(*i)}
+	return types.Int64Value(int64(*i))
 }
 
 // IntToNumberValue takes an int and wraps it up as a types.Number
@@ -608,12 +608,12 @@ func IntToNumberValue(i int) types.Number {
 
 // Float64ToFloat64Value takes a float64 and wraps it up as a types.Float64
 func Float64ToFloat64Value(f float64) types.Float64 {
-	return types.Float64{Value: f}
+	return types.Float64Value(f)
 }
 
 // Float64ToNumberValue takes a float64 and wraps it up as a types.Number
 func Float64ToNumberValue(f float64) types.Number {
-	return types.Number{Value: big.NewFloat(f)}
+	return types.NumberValue(big.NewFloat(f))
 }
 
 // Float32ToFloat64Value takes a float32 and wraps it up as a types.Float64
@@ -628,14 +628,14 @@ func Float32ToNumberValue(f float32) types.Number {
 
 // StringToStringValue takes a string and wraps it up as a types.String
 func StringToStringValue(s string) types.String {
-	return types.String{Value: s}
+	return types.StringValue(s)
 }
 
 // BytesToStringValue takes a byte slice and wraps it as a types.String.  If the provided slice is `nil`, then the
 // resulting String type will be marked as "null".
 func BytesToStringValue(b []byte) types.String {
 	if b == nil {
-		return types.String{Null: true}
+		return types.StringNull()
 	}
 	return StringToStringValue(string(b))
 }
@@ -644,9 +644,9 @@ func BytesToStringValue(b []byte) types.String {
 // If the go value is nil, Null will be true on the outgoing attr.Value type
 func StringPtrToStringValue(s *string) types.String {
 	if s == nil {
-		return types.String{Null: true}
+		return types.StringNull()
 	}
-	return types.String{Value: *s}
+	return types.StringValue(*s)
 }
 
 // IntsToInt64List takes a slice of ints and creates a typed types.List with a ElemType of types.Int64Type and each
@@ -656,18 +656,16 @@ func StringPtrToStringValue(s *string) types.String {
 // avoid Terraform state inconsistencies under certain circumstances.
 func IntsToInt64List(in []int, nullOnEmpty bool) types.List {
 	inLen := len(in)
-	lt := types.List{
-		Elems:    make([]attr.Value, len(in)),
-		ElemType: types.Int64Type,
-	}
 	if nullOnEmpty && inLen == 0 {
-		lt.Null = true
-	} else {
-		for i, n := range in {
-			lt.Elems[i] = IntToInt64Value(n)
-		}
+		return types.ListNull(types.Int64Type)
 	}
-	return lt
+
+	elems := make([]attr.Value, len(in))
+	for i, n := range in {
+		elems[i] = IntToInt64Value(n)
+	}
+
+	return types.ListValueMust(types.Int64Type, elems)
 }
 
 // IntsToInt64Set takes a slice of ints and creates a typed types.Set with an ElemType of types.Int64Type and each
@@ -677,16 +675,15 @@ func IntsToInt64List(in []int, nullOnEmpty bool) types.List {
 // avoid Terraform state inconsistencies under certain circumstances.
 func IntsToInt64Set(in []int, nullOnEmpty bool) types.Set {
 	inLen := len(in)
-	st := types.Set{
-		Elems:    make([]attr.Value, inLen),
-		ElemType: types.Int64Type,
-	}
+
 	if nullOnEmpty && inLen == 0 {
-		st.Null = true
-	} else {
-		for i, n := range in {
-			st.Elems[i] = IntToInt64Value(n)
-		}
+		return types.SetNull(types.Int64Type)
 	}
-	return st
+
+	elems := make([]attr.Value, inLen)
+	for i, n := range in {
+		elems[i] = IntToInt64Value(n)
+	}
+
+	return types.SetValueMust(types.Int64Type, elems)
 }

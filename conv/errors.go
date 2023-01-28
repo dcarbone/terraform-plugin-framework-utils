@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/dcarbone/terraform-plugin-framework-utils/v2/internal/util"
+	"github.com/dcarbone/terraform-plugin-framework-utils/v3/internal/util"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 )
 
