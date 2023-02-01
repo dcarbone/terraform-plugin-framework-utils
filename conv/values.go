@@ -296,6 +296,16 @@ func BoolValueToBoolPtr(v attr.Value) *bool {
 	return vPtr
 }
 
+// BoolPtrToBoolValue accepts a bool pointer, returning a types.Bool with the dereferenced value.
+//
+// If the provided pointer is nil, the returned Bool type will be set as Null.
+func BoolPtrToBoolValue(b *bool) types.Bool {
+	if b == nil {
+		return types.BoolNull()
+	}
+	return types.BoolValue(*b)
+}
+
 // NumberValueToBigFloat accepts either a types.Number or *types.Number, returning the raw *big.Float value.  This may
 // be nil if the value was not set.
 func NumberValueToBigFloat(v attr.Value) *big.Float {
