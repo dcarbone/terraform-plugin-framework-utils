@@ -296,16 +296,6 @@ func BoolValueToBoolPtr(v attr.Value) *bool {
 	return vPtr
 }
 
-// BoolPtrToBoolValue accepts a bool pointer, returning a types.Bool with the dereferenced value.
-//
-// If the provided pointer is nil, the returned Bool type will be set as Null.
-func BoolPtrToBoolValue(b *bool) types.Bool {
-	if b == nil {
-		return types.BoolNull()
-	}
-	return types.BoolValue(*b)
-}
-
 // NumberValueToBigFloat accepts either a types.Number or *types.Number, returning the raw *big.Float value.  This may
 // be nil if the value was not set.
 func NumberValueToBigFloat(v attr.Value) *big.Float {
@@ -398,7 +388,7 @@ func StringValueToStringPtr(v attr.Value) *string {
 	return vPtr
 }
 
-// StringListToStrings accepts an instance of either types.List or *types.List where ElemType MUST be types.StringType,
+// StringListToStrings accepts an instance of either types.List or *types.List where ElementType MUST be types.StringType,
 // returning a slice of strings of the value of each element
 func StringListToStrings(v attr.Value) []string {
 	vt := ValueToListType(v)
@@ -409,7 +399,7 @@ func StringListToStrings(v attr.Value) []string {
 	return out
 }
 
-// StringSetToStrings accepts an instance of either types.Set or *types.Set where ElemType MUST be types.StringType,
+// StringSetToStrings accepts an instance of either types.Set or *types.Set where ElementType MUST be types.StringType,
 // returning a slice of strings of the value of each element
 func StringSetToStrings(v attr.Value) []string {
 	vt := ValueToSetType(v)
@@ -420,7 +410,7 @@ func StringSetToStrings(v attr.Value) []string {
 	return out
 }
 
-// Int64ListToInts accepts an instance of either types.List or *types.List where ElemType MUST be types.Int64Type,
+// Int64ListToInts accepts an instance of either types.List or *types.List where ElementType MUST be types.Int64Type,
 // returning a slice of ints of the value of each element.
 func Int64ListToInts(v attr.Value) []int {
 	vt := ValueToListType(v)
@@ -431,7 +421,7 @@ func Int64ListToInts(v attr.Value) []int {
 	return out
 }
 
-// Int64SetToInts accepts an instance of either types.Set or *types.set where ElemType MUST be types.Int64Type
+// Int64SetToInts accepts an instance of either types.Set or *types.set where ElementType MUST be types.Int64Type
 // returning a slice of ints of the value of each element
 func Int64SetToInts(v attr.Value) []int {
 	vt := ValueToSetType(v)
@@ -442,7 +432,7 @@ func Int64SetToInts(v attr.Value) []int {
 	return out
 }
 
-// NumberListToInts accepts either an instance of types.List or *types.List where ElemType MUST be types.NumberType
+// NumberListToInts accepts either an instance of types.List or *types.List where ElementType MUST be types.NumberType
 // returning a slice of ints of the value of each element
 func NumberListToInts(v attr.Value) []int {
 	vt := ValueToListType(v)
@@ -454,7 +444,7 @@ func NumberListToInts(v attr.Value) []int {
 	return out
 }
 
-// NumberSetToInts accepts either an instance of types.Set or *types.Set where ElemType MUST be types.NumberType
+// NumberSetToInts accepts either an instance of types.Set or *types.Set where ElementType MUST be types.NumberType
 // returning a slice of ints of the value of each element
 func NumberSetToInts(v attr.Value) []int {
 	vt := ValueToSetType(v)
@@ -541,11 +531,23 @@ func AttributeValueToBigFloat(v attr.Value) (*big.Float, error) {
 }
 
 // BoolToBoolValue takes a bool and wraps it up as a types.Bool
+// DEPRECATED: use types.BoolValue() directly
 func BoolToBoolValue(b bool) types.Bool {
 	return types.BoolValue(b)
 }
 
+// BoolPtrToBoolValue accepts a bool pointer, returning a types.Bool with the dereferenced value.
+//
+// If the provided pointer is nil, the returned Bool type will be set as Null.
+func BoolPtrToBoolValue(b *bool) types.Bool {
+	if b == nil {
+		return types.BoolNull()
+	}
+	return types.BoolValue(*b)
+}
+
 // Int64ToInt64Value takes an int64 and wraps it up as a types.Int64
+// DEPRECATED: use types.Int64Value() directly
 func Int64ToInt64Value(i int64) types.Int64 {
 	return types.Int64Value(i)
 }
@@ -557,7 +559,7 @@ func Int64ToNumberValue(i int64) types.Number {
 
 // IntToInt64Value takes an int and wraps it up as a types.Int64
 func IntToInt64Value(i int) types.Int64 {
-	return Int64ToInt64Value(int64(i))
+	return types.Int64Value(int64(i))
 }
 
 // IntPtrToInt64Value takes an *int and wraps it up as a types.Int64
@@ -576,6 +578,7 @@ func IntToNumberValue(i int) types.Number {
 }
 
 // Float64ToFloat64Value takes a float64 and wraps it up as a types.Float64
+// DEPRECATED: use types.Float64Value() directly
 func Float64ToFloat64Value(f float64) types.Float64 {
 	return types.Float64Value(f)
 }
@@ -587,7 +590,7 @@ func Float64ToNumberValue(f float64) types.Number {
 
 // Float32ToFloat64Value takes a float32 and wraps it up as a types.Float64
 func Float32ToFloat64Value(f float32) types.Float64 {
-	return Float64ToFloat64Value(float64(f))
+	return types.Float64Value(float64(f))
 }
 
 // Float32ToNumberValue takes a float32 and wraps it up as a types.Number
@@ -596,6 +599,7 @@ func Float32ToNumberValue(f float32) types.Number {
 }
 
 // StringToStringValue takes a string and wraps it up as a types.String
+// DEPRECATED: use types.StringValue() directly
 func StringToStringValue(s string) types.String {
 	return types.StringValue(s)
 }
@@ -606,10 +610,11 @@ func BytesToStringValue(b []byte) types.String {
 	if b == nil {
 		return types.StringNull()
 	}
-	return StringToStringValue(string(b))
+	return types.StringValue(string(b))
 }
 
 // StringPtrToStringValue takes a *string and wraps it up as a types.String
+//
 // If the go value is nil, Null will be true on the outgoing attr.Value type
 func StringPtrToStringValue(s *string) types.String {
 	if s == nil {
@@ -618,18 +623,59 @@ func StringPtrToStringValue(s *string) types.String {
 	return types.StringValue(*s)
 }
 
-// IntsToInt64List takes a slice of ints and creates a typed types.List with a ElemType of types.Int64Type and each
-// value of Elems being an instance of types.Int64
+// StringsToStringList takes a slice of strings and creates a typed types.List with an ElementType of types.String
+// and each value of Elements being an instance of types.String
 //
-// If nullOnEmpty parameter is `true`, sets the Null field on the returned types.List to `true`.  This can be used to
+// If nullOnEmpty parameter is `true`, the returned types.List will be set to Null.  This can be used to
+// avoid Terraform state inconsistencies under certain circumstances.
+func StringsToStringList(in []string, nullOnEmpty bool) types.List {
+	inLen := len(in)
+
+	if nullOnEmpty && inLen == 0 {
+		return types.ListNull(types.StringType)
+	}
+
+	elems := make([]attr.Value, inLen)
+	for i, n := range in {
+		elems[i] = types.StringValue(n)
+	}
+
+	return types.ListValueMust(types.StringType, elems)
+}
+
+// StringsToStringSet takes a slice of strings and creates a typed types.Set with an ElementType of types.String
+// and each value of Elements being an instance of types.String
+//
+// If nullOnEmpty parameter is `true`, the returned types.Set will be set to Null.  This can be used to
+// avoid Terraform state inconsistencies under certain circumstances.
+func StringsToStringSet(in []string, nullOnEmpty bool) types.Set {
+	inLen := len(in)
+
+	if nullOnEmpty && inLen == 0 {
+		return types.SetNull(types.StringType)
+	}
+
+	elems := make([]attr.Value, inLen)
+	for i, n := range in {
+		elems[i] = types.StringValue(n)
+	}
+
+	return types.SetValueMust(types.StringType, elems)
+}
+
+// IntsToInt64List takes a slice of ints and creates a typed types.List with a ElementType of types.Int64Type and each
+// value of Elements being an instance of types.Int64
+//
+// If nullOnEmpty parameter is `true`, the returned types.List will be set to Null.  This can be used to
 // avoid Terraform state inconsistencies under certain circumstances.
 func IntsToInt64List(in []int, nullOnEmpty bool) types.List {
 	inLen := len(in)
+
 	if nullOnEmpty && inLen == 0 {
 		return types.ListNull(types.Int64Type)
 	}
 
-	elems := make([]attr.Value, len(in))
+	elems := make([]attr.Value, inLen)
 	for i, n := range in {
 		elems[i] = IntToInt64Value(n)
 	}
@@ -637,10 +683,10 @@ func IntsToInt64List(in []int, nullOnEmpty bool) types.List {
 	return types.ListValueMust(types.Int64Type, elems)
 }
 
-// IntsToInt64Set takes a slice of ints and creates a typed types.Set with an ElemType of types.Int64Type and each
-// value of Elems being an instance of types.Int64
+// IntsToInt64Set takes a slice of ints and creates a typed types.Set with an ElementType of types.Int64Type and each
+// value of Elements being an instance of types.Int64
 //
-// If nullOnEmpty parameter is `true`, sets the Null field on the returned types.Set to `true`.  This can be used to
+// If nullOnEmpty parameter is `true`, the returned types.Set will be set to Null.  This can be used to
 // avoid Terraform state inconsistencies under certain circumstances.
 func IntsToInt64Set(in []int, nullOnEmpty bool) types.Set {
 	inLen := len(in)
