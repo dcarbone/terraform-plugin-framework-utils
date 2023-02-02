@@ -45,7 +45,7 @@ The Terraform Plugin Framework has a great set of per-value type validator inter
 as some validations need not be aware of type, or may benefit from being applicable to multiple types.
 
 To facilitate this, I have created a few that I have found useful when creating my own providers, and defined a
-small wrapper to make creating new validators as simple as [defining a function](validation/validators.go#19).
+small wrapper to make creating new validators as simple as [defining a function](validation/validators.go#L20).
 
 ## Provided Validators
 
