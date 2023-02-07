@@ -3,18 +3,21 @@ package acctest_test
 import (
 	"fmt"
 	"math"
-	"reflect"
 	"testing"
 	"time"
 
 	"github.com/dcarbone/terraform-plugin-framework-utils/v3/acctest"
+	"github.com/hashicorp/hcl/v2"
+	"github.com/hashicorp/hcl/v2/hclparse"
 )
 
 func TestConfigValue_Defaults(t *testing.T) {
 	type convTest struct {
-		name string
-		in   interface{}
-		out  interface{}
+		name       string
+		looseMatch bool
+		in         interface{}
+		out        interface{}
+		schema     *hcl.BodySchema
 	}
 
 	theTests := []convTest{
@@ -70,7 +73,8 @@ line`,
 			out: `<<EOD
 multi
 line
-EOD`,
+EOD
+`,
 		},
 		{
 			name: "duration-to-string",
@@ -109,14 +113,75 @@ EOD`,
 ` + fmt.Sprintf("%f", float64(5)) + `
 ]`,
 		},
+		{
+			name: "slice-map-string-interface",
+			in: []map[string]interface{}{
+				{"key1": []string{"k1v1", "k1v2"}, "key2": "k2v2"},
+				{"key3": 5},
+			},
+			looseMatch: true,
+			schema: &hcl.BodySchema{
+				Attributes: []hcl.AttributeSchema{
+					{
+						Name:     "testvar",
+						Required: true,
+					},
+				},
+			},
+			out: `[
+		{
+		key1 = [
+		"k1v1",
+		"k1v2"
+		]
+		key2 = "k2v2"
+		},
+		{
+		key3 = 5
+		}
+		]`,
+		},
 	}
 
 	// todo: use biggerer brain to figure out how to test map -> string verification
 
 	for _, theT := range theTests {
 		t.Run(theT.name, func(t *testing.T) {
+
+			// generate output
 			out := acctest.ConfigValue(theT.in)
-			if !reflect.DeepEqual(out, theT.out) {
+
+			// ensure output can be parsed by hcl parser
+			hp := hclparse.NewParser()
+
+			// turn output into a block definition for the parser
+			ho := fmt.Sprintf("testvar = %s", out)
+
+			// attempt parse
+			hf, d := hp.ParseHCL([]byte(ho), fmt.Sprintf("%s-hcl", theT.name))
+
+			// check diagnostics for errors
+			if d.HasErrors() {
+				t.Logf("Failed to parse generated HCL: %v", d.Error())
+				t.Log(ho)
+				t.Fail()
+				return
+			}
+
+			if theT.schema != nil {
+				if _, d := hf.Body.Content(theT.schema); d.HasErrors() {
+					t.Logf("Generated HCL does not conform to schema: %v", d.Error())
+					t.Logf(ho)
+					t.Fail()
+					return
+				}
+			}
+
+			if theT.looseMatch {
+				return
+			}
+
+			if out != theT.out {
 				t.Log("Output does not match expected")
 				t.Logf("Input: %v", theT.in)
 				t.Logf("Expected: %v", theT.out)

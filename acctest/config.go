@@ -47,7 +47,7 @@ func DefaultConfigValueFuncs() map[string]ConfigValueFunc {
 		// handle single and multi-line strings
 		util.KeyFN(""): func(v interface{}) string {
 			if strings.Contains(v.(string), "\n") {
-				return fmt.Sprintf("<<EOD\n%s\nEOD", v.(string))
+				return fmt.Sprintf("<<EOD\n%s\nEOD\n", v.(string))
 			} else {
 				return fmt.Sprintf("%q", v.(string))
 			}
@@ -85,6 +85,20 @@ func DefaultConfigValueFuncs() map[string]ConfigValueFunc {
 		util.KeyFN(make([]float64, 0)): func(v interface{}) string {
 			formatted := make([]string, 0)
 			for _, v := range v.([]float64) {
+				formatted = append(formatted, ConfigValue(v))
+			}
+			return fmt.Sprintf("[\n%s\n]", strings.Join(formatted, ",\n"))
+		},
+		util.KeyFN(make([]map[string]interface{}, 0)): func(v interface{}) string {
+			formatted := make([]string, 0)
+			for _, v := range v.([]map[string]interface{}) {
+				formatted = append(formatted, ConfigValue(v))
+			}
+			return fmt.Sprintf("[\n%s\n]", strings.Join(formatted, ",\n"))
+		},
+		util.KeyFN(make([]map[string]string, 0)): func(v interface{}) string {
+			formatted := make([]string, 0)
+			for _, v := range v.([]map[string]string) {
 				formatted = append(formatted, ConfigValue(v))
 			}
 			return fmt.Sprintf("[\n%s\n]", strings.Join(formatted, ",\n"))
