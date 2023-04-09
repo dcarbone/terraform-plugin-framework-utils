@@ -3,6 +3,7 @@ module github.com/dcarbone/terraform-plugin-framework-utils/v3
 go 1.19
 
 require (
+	github.com/hashicorp/hcl/v2 v2.16.0
 	github.com/hashicorp/terraform-plugin-framework v1.1.1
 	github.com/hashicorp/terraform-plugin-go v0.14.3
 )
@@ -13,7 +14,6 @@ require (
 	github.com/fatih/color v1.13.0 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/hashicorp/go-hclog v1.2.1 // indirect
-	github.com/hashicorp/hcl/v2 v2.16.0 // indirect
 	github.com/hashicorp/terraform-plugin-log v0.7.0 // indirect
 	github.com/mattn/go-colorable v0.1.12 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
@@ -22,9 +22,9 @@ require (
 	github.com/vmihailenco/msgpack/v4 v4.3.12 // indirect
 	github.com/vmihailenco/tagparser v0.1.1 // indirect
 	github.com/zclconf/go-cty v1.12.1 // indirect
-	golang.org/x/net v0.0.0-20220722155237-a158d28d115b // indirect
-	golang.org/x/sys v0.0.0-20220722155257-8c9f86f7a55f // indirect
-	golang.org/x/text v0.4.0 // indirect
+	golang.org/x/net v0.7.0 // indirect
+	golang.org/x/sys v0.5.0 // indirect
+	golang.org/x/text v0.7.0 // indirect
 	google.golang.org/appengine v1.6.5 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
 )
