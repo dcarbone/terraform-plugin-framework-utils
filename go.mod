@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/hashicorp/hcl/v2 v2.16.0
-	github.com/hashicorp/terraform-plugin-framework v1.1.1
+	github.com/hashicorp/terraform-plugin-framework v1.2.0
 	github.com/hashicorp/terraform-plugin-go v0.14.3
 )
 
@@ -13,8 +13,8 @@ require (
 	github.com/apparentlymart/go-textseg/v13 v13.0.0 // indirect
 	github.com/fatih/color v1.13.0 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
-	github.com/hashicorp/go-hclog v1.2.1 // indirect
-	github.com/hashicorp/terraform-plugin-log v0.7.0 // indirect
+	github.com/hashicorp/go-hclog v1.4.0 // indirect
+	github.com/hashicorp/terraform-plugin-log v0.8.0 // indirect
 	github.com/mattn/go-colorable v0.1.12 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
 	github.com/mitchellh/go-testing-interface v1.14.1 // indirect
