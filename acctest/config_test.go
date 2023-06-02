@@ -6,18 +6,19 @@ import (
 	"testing"
 	"time"
 
-	"github.com/dcarbone/terraform-plugin-framework-utils/v3/acctest"
 	"github.com/hashicorp/hcl/v2"
+	"github.com/hashicorp/hcl/v2/gohcl"
 	"github.com/hashicorp/hcl/v2/hclparse"
+	"github.com/stretchr/testify/assert"
+
+	"github.com/dcarbone/terraform-plugin-framework-utils/v3/acctest"
 )
 
 func TestConfigValue_Defaults(t *testing.T) {
 	type convTest struct {
-		name       string
-		looseMatch bool
-		in         interface{}
-		out        interface{}
-		schema     *hcl.BodySchema
+		name string
+		in   interface{}
+		out  interface{}
 	}
 
 	theTests := []convTest{
@@ -119,15 +120,6 @@ EOD
 				{"key1": []string{"k1v1", "k1v2"}, "key2": "k2v2"},
 				{"key3": 5},
 			},
-			looseMatch: true,
-			schema: &hcl.BodySchema{
-				Attributes: []hcl.AttributeSchema{
-					{
-						Name:     "testvar",
-						Required: true,
-					},
-				},
-			},
 			out: `[
 		{
 		key1 = [
@@ -143,51 +135,61 @@ EOD
 		},
 	}
 
-	// todo: use biggerer brain to figure out how to test map -> string verification
-
 	for _, theT := range theTests {
 		t.Run(theT.name, func(t *testing.T) {
+			var (
+				expectedHCLFile *hcl.File
+				actualHCLBlock  string
+				actualHCLFile   *hcl.File
+				diags           hcl.Diagnostics
+				err             error
 
-			// generate output
-			out := acctest.ConfigValue(theT.in)
+				expectedHCLName  = fmt.Sprintf("%s.hcl", theT.name)
+				expectedHCLBlock = fmt.Sprintf("testvar = %s", theT.out)
+				expectedData     = make(map[string]interface{})
 
-			// ensure output can be parsed by hcl parser
-			hp := hclparse.NewParser()
+				actualHCLName = fmt.Sprintf("%s.hcl", theT.name)
+				actualData    = make(map[string]interface{})
+
+				// create hcl parser to use diags from to test both expected and actual output
+				hp = hclparse.NewParser()
+			)
+
+			// try to parse the expected output, making sure our test is valid
+			if expectedHCLFile, diags = hp.ParseHCL([]byte(expectedHCLBlock), expectedHCLName); diags.HasErrors() {
+				t.Logf("Expected output HCL contains errors: %v", diags.Error())
+				t.Log(expectedHCLBlock)
+				t.Fail()
+				return
+			}
+
+			// attempt to decode expected data
+			if diags = gohcl.DecodeBody(expectedHCLFile.Body, nil, &expectedData); diags.HasErrors() {
+				t.Logf("Error decoding expected HCL: %v", err)
+				t.Log(expectedHCLBlock)
+				t.Fail()
+				return
+			}
 
 			// turn output into a block definition for the parser
-			ho := fmt.Sprintf("testvar = %s", out)
+			actualHCLBlock = fmt.Sprintf("testvar = %s", acctest.ConfigValue(theT.in))
 
-			// attempt parse
-			hf, d := hp.ParseHCL([]byte(ho), fmt.Sprintf("%s-hcl", theT.name))
-
-			// check diagnostics for errors
-			if d.HasErrors() {
-				t.Logf("Failed to parse generated HCL: %v", d.Error())
-				t.Log(ho)
+			// attempt parse and check diagnostics for errors
+			if actualHCLFile, diags = hp.ParseHCL([]byte(actualHCLBlock), actualHCLName); diags.HasErrors() {
+				t.Logf("Failed to parse generated HCL: %v", diags.Error())
+				t.Log(actualHCLBlock)
 				t.Fail()
 				return
 			}
 
-			if theT.schema != nil {
-				if _, d := hf.Body.Content(theT.schema); d.HasErrors() {
-					t.Logf("Generated HCL does not conform to schema: %v", d.Error())
-					t.Logf(ho)
-					t.Fail()
-					return
-				}
-			}
-
-			if theT.looseMatch {
+			// decode generated hcl
+			if diags = gohcl.DecodeBody(actualHCLFile.Body, nil, &actualData); diags.HasErrors() {
+				t.Logf("Failed to decode generated HCL: %v", err)
+				t.Fail()
 				return
 			}
 
-			if out != theT.out {
-				t.Log("Output does not match expected")
-				t.Logf("Input: %v", theT.in)
-				t.Logf("Expected: %v", theT.out)
-				t.Logf("Actual: %v", out)
-				t.Fail()
-			}
+			assert.EqualValues(t, expectedData, actualData, "Actual decoded HCL does not match expected")
 		})
 	}
 }
