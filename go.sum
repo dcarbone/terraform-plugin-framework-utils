@@ -16,8 +16,8 @@ github.com/hashicorp/hcl/v2 v2.17.0 h1:z1XvSUyXd1HP10U4lrLg5e0JMVz6CPaJvAgxM0KNZ
 github.com/hashicorp/hcl/v2 v2.17.0/go.mod h1:gJyW2PTShkJqQBKpAmPO3yxMxIuoXkOF2TpqXzrQyx4=
 github.com/hashicorp/terraform-plugin-framework v1.3.2 h1:aQ6GSD0CTnvoALEWvKAkcH/d8jqSE0Qq56NYEhCexUs=
 github.com/hashicorp/terraform-plugin-framework v1.3.2/go.mod h1:oimsRAPJOYkZ4kY6xIGfR0PHjpHLDLaknzuptl6AvnY=
-github.com/hashicorp/terraform-plugin-go v0.17.0 h1:OpqgPLvjW3vCDA9VUEmRKppCZOG/+Vkdp6ijkG8aJek=
-github.com/hashicorp/terraform-plugin-go v0.17.0/go.mod h1:l7VK+2u5Kf2y+A+742GX0ouLut3gttudmvMgN0PA74Y=
+github.com/hashicorp/terraform-plugin-go v0.18.0 h1:IwTkOS9cOW1ehLd/rG0y+u/TGLK9y6fGoBjXVUquzpE=
+github.com/hashicorp/terraform-plugin-go v0.18.0/go.mod h1:l7VK+2u5Kf2y+A+742GX0ouLut3gttudmvMgN0PA74Y=
 github.com/hashicorp/terraform-plugin-log v0.9.0 h1:i7hOA+vdAItN1/7UrfBqBwvYPQ9TFvymaRGZED3FCV0=
 github.com/hashicorp/terraform-plugin-log v0.9.0/go.mod h1:rKL8egZQ/eXSyDqzLUuwUYLVdlYeamldAHSxjUFADow=
 github.com/kr/pretty v0.1.0 h1:L/CwN0zerZDmRFUapSPitk6f+Q3+0za1rQkzVuMiMFI=
