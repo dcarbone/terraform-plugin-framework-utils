@@ -5,7 +5,7 @@ go 1.19
 require (
 	github.com/hashicorp/hcl/v2 v2.19.1
 	github.com/hashicorp/terraform-plugin-framework v1.4.2
-	github.com/hashicorp/terraform-plugin-go v0.19.0
+	github.com/hashicorp/terraform-plugin-go v0.19.1
 	github.com/stretchr/testify v1.8.4
 )
 
@@ -23,7 +23,7 @@ require (
 	github.com/mitchellh/go-testing-interface v1.14.1 // indirect
 	github.com/mitchellh/go-wordwrap v0.0.0-20150314170334-ad45545899c7 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/vmihailenco/msgpack/v5 v5.3.5 // indirect
+	github.com/vmihailenco/msgpack/v5 v5.4.1 // indirect
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
 	github.com/zclconf/go-cty v1.13.0 // indirect
 	golang.org/x/sys v0.13.0 // indirect
