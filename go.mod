@@ -5,7 +5,7 @@ go 1.19
 require (
 	github.com/hashicorp/hcl/v2 v2.19.1
 	github.com/hashicorp/terraform-plugin-framework v1.4.2
-	github.com/hashicorp/terraform-plugin-go v0.19.1
+	github.com/hashicorp/terraform-plugin-go v0.20.0
 	github.com/stretchr/testify v1.8.4
 )
 
