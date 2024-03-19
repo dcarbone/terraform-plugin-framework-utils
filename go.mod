@@ -6,7 +6,7 @@ require (
 	github.com/hashicorp/hcl/v2 v2.20.0
 	github.com/hashicorp/terraform-plugin-framework v1.6.1
 	github.com/hashicorp/terraform-plugin-go v0.22.0
-	github.com/stretchr/testify v1.8.4
+	github.com/stretchr/testify v1.9.0
 )
 
 require (
