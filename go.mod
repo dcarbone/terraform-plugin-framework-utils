@@ -3,7 +3,7 @@ module github.com/dcarbone/terraform-plugin-framework-utils/v3
 go 1.23
 
 require (
-	github.com/hashicorp/hcl/v2 v2.22.0
+	github.com/hashicorp/hcl/v2 v2.23.0
 	github.com/hashicorp/terraform-plugin-framework v1.13.0
 	github.com/hashicorp/terraform-plugin-go v0.25.0
 	github.com/stretchr/testify v1.9.0
