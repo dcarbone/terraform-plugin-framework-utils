@@ -169,6 +169,11 @@ func DataSourceHeader(dataSourceType, dataSourceName string) string {
 	return fmt.Sprintf(f, dataSourceType, dataSourceName)
 }
 
+func EphemeralResourceHeader(ephemeralResourceType, ephemeralResourceName string) string {
+	const f = `ephemeral %q %q`
+	return fmt.Sprintf(f, ephemeralResourceType, ephemeralResourceName)
+}
+
 func CompileProviderConfig(providerName string, fieldMaps ...map[string]interface{}) string {
 	return CompileConfig(
 		ProviderHeader(providerName),
