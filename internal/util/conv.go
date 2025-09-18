@@ -466,6 +466,6 @@ func GetPrintableTypeWithValue(in interface{}) string {
 		return fmt.Sprintf("%[1]T(%[1]f)", in)
 
 	default:
-		return fmt.Sprintf(fmt.Sprintf("%[1]T(%[1]v)", in))
+		return fmt.Sprintf("%[1]T(%[1]v)", in)
 	}
 }
